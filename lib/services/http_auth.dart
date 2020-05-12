@@ -43,15 +43,19 @@ class HttpAuth {
     }
   }
 
-  Future<User> signUpWithEmailAndPassword(String email, String password) async {
+  Future<User> signUpWithEmailAndPassword(String email, String password,
+      String firstName, String lastName, String birthDate) async {
     final http.Response response = await http.post(
-      'https://reqres.in/api/register',
+      'https://greenapp-authenticate-service.herokuapp.com/auth/sign/up/',
       headers: {
         'Content-type': 'application/json',
       },
       body: json.encode({
+        'firstName': firstName,
+        'lastName': lastName,
+        'birthDate': birthDate,
         'email': email,
-        'password': password,
+        'password': password
       }),
     );
     if (response.statusCode == 200) {
