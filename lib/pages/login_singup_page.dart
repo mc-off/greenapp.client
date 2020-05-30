@@ -249,7 +249,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           width: _DoubleConstants.textFieldContainerWidth.value,
           alignment: Alignment.centerLeft,
           child: Text(
-            "Логин",
+            "Login",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -282,7 +282,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                 width: _DoubleConstants.textFieldContainerWidth.value,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Имя",
+                  "Name",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -313,7 +313,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                 width: _DoubleConstants.textFieldContainerWidth.value,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Фамилия",
+                  "Surname",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -346,7 +346,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                 width: _DoubleConstants.textFieldContainerWidth.value,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Дата",
+                  "Birth",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -376,7 +376,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           width: _DoubleConstants.textFieldContainerWidth.value,
           alignment: Alignment.centerLeft,
           child: Text(
-            "Пароль",
+            "Pass",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),

@@ -10,7 +10,7 @@ abstract class BaseAuth {
 
 //Future<void> sendEmailVerification();
 
-//Future<void> signOut();
+  Future<void> signOut();
 
 //Future<bool> isEmailVerified();
 }
