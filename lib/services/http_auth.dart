@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -9,6 +11,10 @@ import 'package:http/http.dart' as http;
 class HttpAuth {
   final SessionStorage storage = new SessionStorage();
   Future<User> _user;
+  static final String username = 'greenuser';
+  static final String password = 'greenpassword';
+  static final String basicAuth =
+      'Basic ' + base64Encode(utf8.encode('$username:$password'));
   HttpAuth() {
     this._user = getFromCache();
   }
@@ -24,12 +30,14 @@ class HttpAuth {
 
   Future<User> signInWithEmailAndPassword(String email, String password) async {
     final http.Response response = await http.post(
-      'https://reqres.in/api/login',
+      'https://greenapp-gateway.herokuapp.com/auth/sign/in/',
       headers: {
         'Content-type': 'application/json',
+        'X-GREEN-APP-ID': 'GREEN',
+        'authorization': basicAuth
       },
       body: json.encode({
-        'email': email,
+        'mailAddress': email,
         'password': password,
       }),
     );
@@ -48,32 +56,65 @@ class HttpAuth {
     }
   }
 
-  Future<User> signUpWithEmailAndPassword(String email, String password,
+  Future<bool> signUpWithEmailAndPassword(String email, String password,
       String firstName, String lastName, String birthDate) async {
     final http.Response response = await http.post(
-      'https://greenapp-auth-service.herokuapp.com/auth/sign/up/',
-      headers: {'Content-type': 'application/json', 'X-GREEN-APP-ID': 'GREEN'},
+      'https://greenapp-gateway.herokuapp.com/auth/sign/up/',
+      headers: <String, String>{
+        'Content-type': 'application/json',
+        'X-GREEN-APP-ID': 'GREEN',
+        'authorization': basicAuth
+      },
       body: json.encode({
         'firstName': firstName,
         'lastName': lastName,
         'birthDate': birthDate,
-        'email': email,
+        'mailAddress': email,
         'password': password
       }),
     );
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
       // then parse the JSON.
-      print(response.toString());
+      print(response.statusCode);
+      print(response.body);
+      return true;
+    } else {
+      // If the server did no
+      //t return a 201 CREATED response,
+      // then throw an exception
+      print(response.statusCode);
+      print(response.body);
+      throw Exception('Failed to sign up');
+    }
+  }
+
+  Future<User> sendEmailVerification(String email, String code) async {
+    final http.Response response = await http.post(
+      'https://greenapp-gateway.herokuapp.com/auth/sign/verify2fa/',
+      headers: <String, String>{
+        'Content-type': 'application/json',
+        'X-GREEN-APP-ID': 'GREEN',
+        'authorization': basicAuth
+      },
+      body: json.encode({'mailAddress': email, 'twoFaCode': int.parse(code)}),
+    );
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body);
       User user = User.fromJson(json.decode(response.body));
-      debugPrint("Sign up user = " + user.token);
+      debugPrint("User validated and stored= " + user.token);
       updateCacheAndUser(user);
       return user;
     } else {
-      // If the server did not return a 201 CREATED response,
+      // If the server did no
+      //t return a 201 CREATED response,
       // then throw an exception
-      print(response.toString());
-      throw Exception('Failed to sign up');
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body);
+      throw Exception('Failed to validate user');
     }
   }
 

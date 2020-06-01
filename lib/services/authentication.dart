@@ -17,11 +17,11 @@ class Auth implements BaseAuth {
 //    throw UnimplementedError();
 //  }
 
-//  @override
-//  Future<void> sendEmailVerification() {
-//    FirebaseUser user = await _firebaseAuth.currentUser();
-//    user.sendEmailVerification();
-//  }
+  @override
+  Future<String> sendEmailVerification(String email, String code) async {
+    User user = await _httpAuth.sendEmailVerification(email, code);
+    return user.token;
+  }
 
   Future<String> signIn(String email, String password) async {
     User user = await _httpAuth.signInWithEmailAndPassword(email, password);
@@ -32,10 +32,11 @@ class Auth implements BaseAuth {
     return _httpAuth.signOut();
   }
 
-  Future<String> signUp(String email, String password, String firstName,
+  Future<bool> signUp(String email, String password, String firstName,
       String lastName, String birthDate) async {
-    User user = await _httpAuth.signUpWithEmailAndPassword(
+    bool isCodeSended = false;
+    isCodeSended = await _httpAuth.signUpWithEmailAndPassword(
         email, password, firstName, lastName, birthDate);
-    return user.token;
+    return isCodeSended;
   }
 }
