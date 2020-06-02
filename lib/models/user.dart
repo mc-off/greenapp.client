@@ -5,7 +5,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      token: json['token'],
+      token: json['jwttoken'],
     );
   }
 //  factory User.parse(String string) {

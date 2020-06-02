@@ -183,9 +183,8 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
   }
 
   void validateCallback() {
-    widget.auth
-        .getCurrentUser()
-        .then((user) => {if (user.token.isNotEmpty) widget.loginCallback()});
+    _isLoginForm = true;
+    validateAndSubmit();
   }
 
   Widget showMainHint() {

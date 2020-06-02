@@ -39,6 +39,7 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
   final _formKey = new GlobalKey<FormState>();
   TextEditingController _code = TextEditingController();
   String _errorMessage;
+  String _infoMessage;
   bool _isLoading;
 
   // Check if form is valid before perform login or signup
@@ -54,6 +55,7 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
   @override
   void initState() {
     _errorMessage = "";
+    _infoMessage = "";
     _isLoading = false;
     super.initState();
   }
@@ -61,19 +63,21 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
   void validateAndSubmit() async {
     setState(() {
       _errorMessage = "";
+      _infoMessage = "";
       _isLoading = true;
     });
     if (validateAndSave()) {
-      String userId = "";
+      bool isValidated = false;
       try {
-        userId = await widget.auth
+        isValidated = await widget.auth
             .sendEmailVerification(widget.email, _code.value.text);
         setState(() {
           _isLoading = false;
         });
 
-        if (userId.isNotEmpty) {
+        if (isValidated) {
           widget.validateCallback();
+          Navigator.pop(context);
         }
       } catch (e) {
         print('Error: $e');
@@ -86,9 +90,38 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
     }
   }
 
+  void resendCode() async {
+    setState(() {
+      _errorMessage = "";
+      _infoMessage = "";
+      _isLoading = true;
+    });
+    bool isSended = false;
+    try {
+      isSended = await widget.auth.resendEmailVerification(widget.email);
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (isSended) {
+        setState(() {
+          _infoMessage = "Code resended to ${widget.email}";
+        });
+      }
+    } catch (e) {
+      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+        _formKey.currentState.reset();
+      });
+    }
+  }
+
   void resetForm() {
     _formKey.currentState.reset();
     _errorMessage = "";
+    _infoMessage = "";
   }
 
   @override
@@ -98,10 +131,7 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
         middle: Text("Login page"),
       ),
       child: Stack(
-        children: <Widget>[
-          _showForm(),
-          _showCircularProgress(),
-        ],
+        children: <Widget>[_showForm(), _showCircularProgress()],
       ),
     );
   }
@@ -118,7 +148,9 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
               showMainHint(),
               showCodeInput(),
               showPrimaryButton(),
+              showSecondaryButton(),
               showErrorMessage(),
+              showInfoMessage()
             ],
           ),
         ));
@@ -146,6 +178,24 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
         ),
       ),
     );
+  }
+
+  Widget showInfoMessage() {
+    if (_infoMessage.length > 0 && _infoMessage != null) {
+      return new CupertinoAlertDialog(
+          content: Text(
+        _infoMessage,
+        style: TextStyle(
+            fontSize: 13.0,
+            color: CupertinoColors.activeBlue,
+            height: 1.0,
+            fontWeight: FontWeight.bold),
+      ));
+    } else {
+      return new Container(
+        height: 0.0,
+      );
+    }
   }
 
   Widget showErrorMessage() {
@@ -181,6 +231,13 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
             onPressed: validateAndSubmit,
           ),
         ));
+  }
+
+  Widget showSecondaryButton() {
+    return new CupertinoButton(
+        child: new Text('Send code one more time',
+            style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
+        onPressed: resendCode);
   }
 
   Widget showCodeInput() {
