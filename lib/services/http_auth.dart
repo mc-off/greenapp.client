@@ -112,12 +112,16 @@ class HttpAuth {
   }
 
   Future<bool> resendEmailVerification(String email) async {
-    final http.Response response = await http.post(
-      'https://greenapp-gateway.herokuapp.com/auth/resend2fa',
+    var queryParameters = {
+      'mail': email,
+    };
+    var uri = Uri.https(
+        'greenapp-gateway.herokuapp.com', '/auth/resend2fa', queryParameters);
+    final http.Response response = await http.get(
+      uri,
       headers: <String, String>{
         'Content-type': 'application/json',
       },
-      body: json.encode({'mailAddress': email}),
     );
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
