@@ -8,9 +8,11 @@ abstract class BaseAuth {
 
   Future<User> getCurrentUser();
 
-  Future<String> sendEmailVerification(String email, String code);
+  Future<bool> sendEmailVerification(String email, String code);
 
   Future<void> signOut();
+
+  Future<bool> resendEmailVerification(String email);
 
 //Future<bool> isEmailVerified();
 }
