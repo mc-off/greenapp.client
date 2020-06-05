@@ -4,7 +4,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/pages/product_row_item.dart';
+import 'package:greenapp/pages/task_row_item.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,7 +36,7 @@ class TasksTab extends StatelessWidget {
                 if (projectSnap.hasData == null) {
                   return Container();
                 }
-                return ProductRowItem(
+                return TaskRowItem(
                   index: index,
                   task: projectSnap.data[index],
                   lastItem: index == projectSnap.data.length - 1,
