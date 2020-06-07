@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenapp/models/task.dart';
+import 'package:greenapp/utils/converters.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -19,17 +21,20 @@ class MapTab extends StatefulWidget {
 
 class _MapTabState extends State<MapTab> {
   GoogleMapController mapController;
+  BitmapDescriptor myIcon =
+      BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan);
 
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      top: false,
       child: GoogleMap(
         onMapCreated: _onMapCreated,
+        zoomGesturesEnabled: true,
+        zoomControlsEnabled: true,
         initialCameraPosition: CameraPosition(
-          target: const LatLng(0, 0),
+          target: const LatLng(60, 50),
           zoom: 2,
         ),
         markers: _markers.values.toSet(),
@@ -71,26 +76,67 @@ class _MapTabState extends State<MapTab> {
     }
   }
 
-  final Map<String, Marker> _markers = {};
+  void _onMarkerTapped() {
+    Navigator.push(
+        context,
+        CupertinoPageRoute(
+            builder: (context) => CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(
+                    middle: Text("Task page"),
+                  ),
+                  child: Center(
+                    child: Text("test"),
+                  ),
+                )));
+  }
+
+  Map<String, Marker> _markers = {};
+
   Future<void> _onMapCreated(GoogleMapController controller) async {
     final googleOffices = await _getTasks();
+    _markers.clear();
+    for (final office in googleOffices) {
+      //final coordinates = LatLng(Random.secure().nextDouble(), Random.secure().nextDouble());
+      var icon = await getMarkerMapIcon(office.type);
+      final marker = Marker(
+        markerId: MarkerId(office.id.toString()),
+        position:
+            LatLng(office.coordinate.latitude, office.coordinate.longitude),
+        icon: icon,
+        infoWindow: InfoWindow(
+          title: office.title,
+          snippet: office.description,
+          onTap: _onMarkerTapped,
+        ),
+      );
+      debugPrint(office.toString());
+      _markers[office.id.toString()] = marker;
+    }
     setState(() {
-      _markers.clear();
-      for (final office in googleOffices) {
-        final coordinates =
-            LatLng(Random.secure().nextDouble(), Random.secure().nextDouble());
-        debugPrint(coordinates.toString());
-        final marker = Marker(
-          markerId: MarkerId(office.id.toString()),
-          position: coordinates,
-          infoWindow: InfoWindow(
-            title: office.title,
-            snippet: office.description,
-          ),
-        );
-        debugPrint(office.toString());
-        _markers[office.id.toString()] = marker;
-      }
+      this._markers = _markers;
     });
+  }
+
+  Future<BitmapDescriptor> getMarkerMapIcon(TaskType taskType) async {
+    switch (taskType) {
+      case TaskType.PLANT:
+//        return BitmapDescriptor.fromAssetImage(
+//            ImageConfiguration(size: Size(48, 48)),
+//            'packages/shrine_images/0-0.jpg');
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+      case TaskType.URBAN:
+        return BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueMagenta);
+      case TaskType.ANIMAL:
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+      case TaskType.PEOPLE:
+        return BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueViolet);
+      case TaskType.ENVIRONMENT:
+        return BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueYellow);
+      default:
+        return Converters.getMarkerIcon();
+    }
   }
 }

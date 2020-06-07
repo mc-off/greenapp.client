@@ -6,28 +6,28 @@ List<Task> modelUserFromJson(String str) =>
     List<Task>.from(json.decode(str).map((x) => Task.fromJson(x)));
 
 class Task {
-  int id;
+  final int id;
 
   //null
-  String title;
+  final String title;
 
   //null
-  String description;
-  TaskStatus status;
-  Coordinate coordinate;
-  TaskType type;
-  int reward;
+  final String description;
+  final TaskStatus status;
+  final Coordinate coordinate;
+  final TaskType type;
+  final int reward;
 
   //null
-  int assignee;
+  final int assignee;
 
   //null
-  int updated;
+  final int updated;
 
   //null
-  String dueDate;
-  int createdBy;
-  int created;
+  final String dueDate;
+  final int createdBy;
+  final int created;
 
   Task(
       {this.id,
