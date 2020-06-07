@@ -8,9 +8,4 @@ class User {
       token: json['jwttoken'],
     );
   }
-//  factory User.parse(String string) {
-//    return User{
-//      token: string,
-//    }
-//  }
 }
