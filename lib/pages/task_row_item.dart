@@ -20,12 +20,10 @@ class TaskRowItem extends StatelessWidget {
   const TaskRowItem({
     this.index,
     this.task,
-    this.lastItem,
   });
 
   final Task task;
   final int index;
-  final bool lastItem;
 
   @override
   Widget build(BuildContext context) {
@@ -76,10 +74,6 @@ class TaskRowItem extends StatelessWidget {
         ],
       ),
     );
-
-    if (lastItem) {
-      return row;
-    }
 
     return Column(
       children: <Widget>[
