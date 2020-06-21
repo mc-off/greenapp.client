@@ -39,19 +39,21 @@ class _TaskListState extends State<TaskList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            removeBottom: false,
-            child: NotificationListener<ScrollNotification>(
-                onNotification: _onNotification, child: _listViewBuilder())));
+      child: MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          removeBottom: false,
+          child: NotificationListener<ScrollNotification>(
+              onNotification: _onNotification, child: _listViewBuilder())),
+      color: CupertinoColors.systemBackground,
+    );
   }
 
   Widget _listViewBuilder() {
     return ListView.builder(
       itemCount: tasks.length,
       itemBuilder: (BuildContext context, int index) {
-        return TaskRowItem(index: index, task: tasks[index]);
+        return TaskRowItem(task: tasks[index]);
       },
     );
   }
