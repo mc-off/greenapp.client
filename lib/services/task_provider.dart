@@ -31,8 +31,8 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<List<Task>> getTasks() {
-    return _httpTaskProvider.getTasksList();
+  Future<List<Task>> getTasks(int id) {
+    return _httpTaskProvider.getTasksList(id);
   }
 
   @override

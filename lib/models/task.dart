@@ -1,6 +1,5 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 
 List<Task> modelUserFromJson(String str) =>
     List<Task>.from(json.decode(str).map((x) => Task.fromJson(x)));
@@ -72,6 +71,8 @@ enum TaskStatus {
   RESOLVED,
   COMPLETED
 }
+
+enum TaskLoadStatus { LOADING, STABLE }
 
 enum TaskType { ANIMAL, PEOPLE, ENVIRONMENT, PLANT, URBAN, OTHER }
 
