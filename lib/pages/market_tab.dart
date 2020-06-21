@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 
 class MarketTab extends StatefulWidget {
   @override
