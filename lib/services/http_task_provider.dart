@@ -10,20 +10,34 @@ class HttpTaskProvider {
 
   HttpTaskProvider(this._bearerAuth);
 
-  Future<List<Task>> getTasksList(int id) async {
+  Future<List<Task>> getCreatedTaskList(int lastTaskId) async {
+    return getTaskList(lastTaskId, TaskStatus.CREATED, "", null);
+  }
+
+  Future<List<Task>> getTasksForCurrentUser(int lastTaskId, int userId) async {
+    return getTaskList(lastTaskId, TaskStatus.CREATED, "", userId);
+  }
+
+  Future<List<Task>> getTaskList(int lastTaskId, TaskStatus taskStatus,
+      String searchString, int assignee) async {
     debugPrint("getTasksList");
     debugPrint(_bearerAuth);
+    Map body = ({
+      'status': EnumToString.parse(taskStatus),
+      "limit": 10,
+      "offset": lastTaskId,
+      "searchString": searchString,
+    });
+    if (assignee != null) {
+      body.addAll(({"assignee": assignee}));
+    }
     http.Response response = await http.post(
       "https://greenapp-gateway.herokuapp.com/task-provider/tasks",
       headers: <String, String>{
         'Authorization': _bearerAuth,
         'Content-type': 'application/json',
       },
-      body: json.encode({
-        'status': EnumToString.parse(TaskStatus.CREATED),
-        "limit": 10,
-        "offset": id
-      }),
+      body: json.encode(body),
     );
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,

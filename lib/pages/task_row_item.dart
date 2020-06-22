@@ -52,7 +52,7 @@ class TaskRowItem extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,12 +81,11 @@ class TaskRowItem extends StatelessWidget {
                 ),
               ),
               ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
                   child: Image(
-                    height: 90,
-                    width: 80,
-                    image: AssetImage('assets/Pin.png'),
-                  ))
+                height: 70,
+                width: 70,
+                image: AssetImage('assets/Pin.png'),
+              ))
             ],
           ),
         ));
