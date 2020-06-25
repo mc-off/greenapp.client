@@ -1,32 +1,34 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'dart:convert';
 
-List<Task> modelUserFromJson(String str) =>
-    List<Task>.from(json.decode(str).map((x) => Task.fromJson(x)));
+import 'package:json_annotation/json_annotation.dart';
 
+part 'task.g.dart';
+
+@JsonSerializable(includeIfNull: false)
 class Task {
   final int id;
 
   //null
-  final String title;
+  String title;
 
   //null
-  final String description;
-  final TaskStatus status;
-  final Coordinate coordinate;
-  final TaskType type;
-  final int reward;
+  String description;
+  TaskStatus status;
+  Coordinate coordinate;
+  TaskType type;
+  int reward;
 
   //null
-  final int assignee;
+  int assignee;
 
   //null
-  final int updated;
+  int updated;
 
   //null
-  final String dueDate;
-  final int createdBy;
-  final int created;
+  String dueDate;
+  int createdBy;
+  int created;
 
   Task(
       {this.id,
@@ -43,22 +45,39 @@ class Task {
       this.created});
 
   @override
-  String toString() => '$title (id=$id)';
+  String toString() => '$title task id=$id)';
 
-  factory Task.fromJson(Map<String, dynamic> json) => Task(
-        id: json['id'],
-        title: json['title'],
-        description: json['title'],
-        status: EnumToString.fromString(TaskStatus.values, json['status']),
-        coordinate: Coordinate.fromJson(json['coordinate']),
-        type: EnumToString.fromString(TaskType.values, json['type']),
-        reward: json['reward'],
-        assignee: json['assignee'],
-        updated: json['updated'],
-        dueDate: json['dueDate'],
-        createdBy: json['createdBy'],
-        created: json['created'],
-      );
+  factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
+//  factory Task.fromJson(Map<String, dynamic> json) => Task(
+//        id: json['id'],
+//        title: json['title'],
+//        description: json['description'],
+//        status: EnumToString.fromString(TaskStatus.values, json['status']),
+//        coordinate: Coordinate.fromJson(json['coordinate']),
+//        type: EnumToString.fromString(TaskType.values, json['type']),
+//        reward: json['reward'],
+//        assignee: json['assignee'],
+//        updated: json['updated'],
+//        dueDate: json['dueDate'],
+//        createdBy: json['createdBy'],
+//        created: json['created'],
+//      );
+
+  Map<String, dynamic> toJson() => _$TaskToJson(this);
+//  Map<String, dynamic> toJson() => {
+//        'id': id,
+//        'title': title,
+//        'description': description,
+//        'status': EnumToString.parse(status),
+//        'coordinate': coordinate.toJson(),
+//        'type': EnumToString.parse(type),
+//        'reward': reward,
+//        'assignee': assignee,
+//        'updated': updated,
+//        'dueDate': dueDate,
+//        'createdBy': createdBy,
+//        'created': created
+//      };
 }
 
 enum TaskStatus {
@@ -76,18 +95,28 @@ enum TaskLoadStatus { LOADING, STABLE }
 
 enum TaskType { ANIMAL, PEOPLE, ENVIRONMENT, PLANT, URBAN, OTHER }
 
+@JsonSerializable(explicitToJson: true)
 class Coordinate {
   double longitude;
   double latitude;
 
   Coordinate({this.longitude, this.latitude});
 
-  factory Coordinate.fromJson(Map<String, dynamic> json) {
-    return Coordinate(
-      longitude: json['longitude'],
-      latitude: json['latitude'],
-    );
-  }
+//  factory Coordinate.fromJson(Map<String, dynamic> json) {
+//    return Coordinate(
+//      longitude: json['longitude'],
+//      latitude: json['latitude'],
+//    );
+//  }
+
+  factory Coordinate.fromJson(Map<String, dynamic> json) =>
+      _$CoordinateFromJson(json);
+  Map<String, dynamic> toJson() => _$CoordinateToJson(this);
+
+//  Map<String, dynamic> toJson() => {
+//        'longitude': longitude,
+//        'latitude': latitude,
+//      };
 
   @override
   String toString() => 'Longitude: $longitude, latitude = $latitude)';

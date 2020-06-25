@@ -63,7 +63,9 @@ class TaskRowItem extends StatelessWidget {
                         ),
                         const Padding(padding: EdgeInsets.only(top: 8)),
                         Text(
-                          '${task.description}',
+                          task.description != null
+                              ? '${task.description}'
+                              : 'Description is empty',
                           style: Styles.body15Regular(),
                         ),
                         const Padding(padding: EdgeInsets.only(top: 8)),
@@ -84,7 +86,7 @@ class TaskRowItem extends StatelessWidget {
                   child: Image(
                 height: 70,
                 width: 70,
-                image: AssetImage('assets/Pin.png'),
+                image: getRowItemIcon(),
               ))
             ],
           ),
@@ -95,5 +97,25 @@ class TaskRowItem extends StatelessWidget {
         row,
       ],
     );
+  }
+
+  AssetImage getRowItemIcon() {
+    switch (task.type) {
+      case TaskType.PLANT:
+//        return BitmapDescriptor.fromAssetImage(
+//            ImageConfiguration(size: Size(48, 48)),
+//            'packages/shrine_images/0-0.jpg');
+        return AssetImage('assets/Pin.png');
+      case TaskType.URBAN:
+        return AssetImage('assets/Pin_magenta.png');
+      case TaskType.ANIMAL:
+        return AssetImage('assets/Pin_red.png');
+      case TaskType.PEOPLE:
+        return AssetImage('assets/Pin_violet.png');
+      case TaskType.ENVIRONMENT:
+        return AssetImage('assets/Pin_orrange.png');
+      default:
+        return AssetImage('assets/Pin.png');
+    }
   }
 }

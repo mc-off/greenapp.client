@@ -8,9 +8,11 @@ import 'package:greenapp/services/http_task_provider.dart';
 class TaskProvider implements BaseTaskProvider {
   BaseAuth _baseAuth;
   HttpTaskProvider _httpTaskProvider;
+  VoidCallback logoutCallback;
 
-  TaskProvider(this._baseAuth) {
+  TaskProvider(this._baseAuth, this.logoutCallback) {
     this._baseAuth = _baseAuth;
+    this.logoutCallback = logoutCallback;
     _setHttpProvider();
   }
 
@@ -26,8 +28,7 @@ class TaskProvider implements BaseTaskProvider {
 
   @override
   Future<Task> getTask(int id) {
-    // TODO: implement getTask
-    throw UnimplementedError();
+    return _httpTaskProvider.getTask(id);
   }
 
   @override
@@ -41,9 +42,8 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<bool> updateTask() {
-    // TODO: implement updateTask
-    throw UnimplementedError();
+  Future<bool> updateTask(Task task) {
+    return _httpTaskProvider.updateTask(task);
   }
 
   @override
@@ -53,7 +53,7 @@ class TaskProvider implements BaseTaskProvider {
 
   Future<void> _setHttpProvider() async {
     final bearerAuth = await _getAuthToken();
-    _httpTaskProvider = HttpTaskProvider(bearerAuth);
+    _httpTaskProvider = HttpTaskProvider(bearerAuth, logoutCallback);
   }
 
   Future<String> _getAuthToken() async {
@@ -61,4 +61,14 @@ class TaskProvider implements BaseTaskProvider {
     debugPrint("User is: " + user.toString());
     return 'Bearer ' + user.token.toString();
   }
+
+  @override
+  Future<List<Task>> getTasksNum(int lastTaskId, int amount) {
+    return _httpTaskProvider.getTasksAmount(lastTaskId, amount);
+  }
+
+//  @override
+//  Future<Image> getTaskAttachments(int taskId) {
+//    return _httpTaskProvider.getAttachmentsForTask(taskId);
+//  }
 }

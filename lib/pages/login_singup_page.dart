@@ -187,7 +187,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showMainHint() {
     return new Container(
-      height: 240,
+      height: 140,
       width: 200,
       child: Center(
         child: Text(
@@ -234,7 +234,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showPrimaryButton() {
     return new Padding(
-        padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 40.0 : 30.0, 0.0, 0.0),
+        padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 80.0 : 30.0, 0.0, 0.0),
         child: SizedBox(
           height: 50.0,
           child: new CupertinoButton.filled(
@@ -259,7 +259,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showEmailInput() {
     return new Padding(
-      padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 0.0 : 00.0, 0.0, 0.0),
+      padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 60.0 : 00.0, 0.0, 0.0),
       child: new CupertinoTextField(
         maxLines: 1,
         keyboardType: TextInputType.emailAddress,

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PlaceHolderContent extends StatelessWidget {
@@ -18,7 +19,7 @@ class PlaceHolderContent extends StatelessWidget {
               textDirection: TextDirection.ltr,
               style: TextStyle(
                 fontSize: 32.0,
-                color: Colors.white70,
+                color: Colors.black,
               ),
               textAlign: TextAlign.center,
             ),
@@ -27,13 +28,13 @@ class PlaceHolderContent extends StatelessWidget {
               textDirection: TextDirection.ltr,
               style: TextStyle(
                 fontSize: 16.0,
-                color: Colors.white70,
+                color: Colors.black,
               ),
               textAlign: TextAlign.center,
             ),
             Padding(
               padding: EdgeInsets.only(top: 15.0),
-              child: RaisedButton(
+              child: CupertinoButton(
                   padding: EdgeInsets.only(
                       left: 25.0, right: 25.0, top: 12.0, bottom: 12.0),
                   child: Text(

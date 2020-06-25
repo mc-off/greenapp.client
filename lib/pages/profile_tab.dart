@@ -74,7 +74,6 @@ class _ProfileTabState extends State<ProfileTab> {
 
   signOut() async {
     try {
-      await widget.auth.signOut();
       widget.logoutCallback();
     } catch (e) {
       print(e);
