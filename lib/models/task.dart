@@ -18,6 +18,7 @@ class Task {
   Coordinate coordinate;
   TaskType type;
   int reward;
+  List<int> attachmentIds;
 
   //null
   int assignee;
@@ -38,6 +39,7 @@ class Task {
       this.coordinate,
       this.type,
       this.reward,
+      this.attachmentIds,
       this.assignee,
       this.updated,
       this.dueDate,

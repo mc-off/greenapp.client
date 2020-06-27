@@ -138,26 +138,27 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
   }
 
   Widget _showForm() {
-    return new Container(
-        padding: EdgeInsets.all(16.0),
-        child: new Form(
-          key: _formKey,
-          child: new ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              //showLogo(),
-              showMainHint(),
-              showEmailInput(),
-              showPasswordInput(),
-              showFirstNameInput(),
-              showSecondNameInput(),
-              showBirthDateInput(),
-              showPrimaryButton(),
-              showSecondaryButton(),
-              showErrorMessage(),
-            ],
-          ),
-        ));
+    return new SafeArea(
+        child: Container(
+            padding: EdgeInsets.all(16.0),
+            child: new Form(
+              key: _formKey,
+              child: new ListView(
+                shrinkWrap: true,
+                children: <Widget>[
+                  //showLogo(),
+                  showMainHint(),
+                  showEmailInput(),
+                  showPasswordInput(),
+                  showFirstNameInput(),
+                  showSecondNameInput(),
+                  showBirthDateInput(),
+                  showPrimaryButton(),
+                  showSecondaryButton(),
+                  showErrorMessage(),
+                ],
+              ),
+            )));
   }
 
   Widget _showCircularProgress() {
@@ -259,7 +260,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showEmailInput() {
     return new Padding(
-      padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 60.0 : 00.0, 0.0, 0.0),
+      padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 100.0 : 00.0, 0.0, 0.0),
       child: new CupertinoTextField(
         maxLines: 1,
         keyboardType: TextInputType.emailAddress,
@@ -269,6 +270,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         maxLength: 30,
         placeholder: 'Email',
         showCursor: true,
+        autocorrect: false,
         prefix: Container(
           height: _DoubleConstants.textFieldContainerHeight.value,
           width: _DoubleConstants.textFieldContainerWidth.value,
@@ -393,6 +395,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         maxLines: 1,
         obscureText: true,
         autofocus: true,
+        autocorrect: false,
         keyboardType: TextInputType.visiblePassword,
         controller: _password,
         placeholder: "Profile's password",

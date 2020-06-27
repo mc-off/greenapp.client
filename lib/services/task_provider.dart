@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
+import 'package:greenapp/models/user.dart';
 import 'package:greenapp/services/base_auth.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/services/http_task_provider.dart';
@@ -21,9 +24,12 @@ class TaskProvider implements BaseTaskProvider {
   BaseAuth get baseAuth => _baseAuth;
 
   @override
-  Future<bool> createTask() {
-    // TODO: implement createTask
-    throw UnimplementedError();
+  Future<int> createTask(
+      List<Object> objects, Task task, UserType userType) async {
+    final user = await _baseAuth.getCurrentUser();
+    task.createdBy = user.clientId;
+    debugPrint("Set user id: " + user.clientId.toString());
+    return _httpTaskProvider.createTask(objects, task);
   }
 
   @override
@@ -37,8 +43,10 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<List<Task>> getTasksForUser(int lastTaskId, int userId) {
-    return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, userId);
+  Future<List<Task>> getTasksForUser(int lastTaskId, UserType userType) async {
+    final user = await _baseAuth.getCurrentUser();
+    debugPrint("Set user id: " + user.clientId.toString());
+    return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, user.clientId);
   }
 
   @override
@@ -67,8 +75,14 @@ class TaskProvider implements BaseTaskProvider {
     return _httpTaskProvider.getTasksAmount(lastTaskId, amount);
   }
 
-//  @override
-//  Future<Image> getTaskAttachments(int taskId) {
-//    return _httpTaskProvider.getAttachmentsForTask(taskId);
-//  }
+  @override
+  Future<Uint8List> getAttachment(int attachId) {
+    return _httpTaskProvider.getAttachment(attachId);
+  }
+
+  @override
+  Future<bool> updateTaskWithAttachments(
+      List<Object> objects, Task task) async {
+    return _httpTaskProvider.updateTaskWithAttachments(objects, task);
+  }
 }

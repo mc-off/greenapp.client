@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:io';
+
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/pages/gallery/gallery_example.dart';
+import 'package:greenapp/pages/gallery/gallery_example_item.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
+import 'package:image_picker/image_picker.dart';
 
 class TaskItem extends StatefulWidget {
   const TaskItem({
@@ -34,9 +39,12 @@ class TaskItem extends StatefulWidget {
 }
 
 class _TaskItemState extends State<TaskItem> {
+  bool isEditable = false;
+
   @override
   void initState() {
     super.initState();
+    if (widget.task.status == TaskStatus.IN_PROGRESS) isEditable = true;
     BackButtonInterceptor.add(myInterceptor);
   }
 
@@ -52,6 +60,20 @@ class _TaskItemState extends State<TaskItem> {
     return true;
   }
 
+  final buttonWidget = <Widget>[
+    CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: () {
+        debugPrint("Check TODO clicked");
+      },
+      child: const Icon(
+        CupertinoIcons.pencil,
+        semanticLabel: 'VoteToDo',
+      ),
+    ),
+    Container()
+  ];
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -61,6 +83,9 @@ class _TaskItemState extends State<TaskItem> {
               return <Widget>[
                 CupertinoSliverNavigationBar(
                   largeTitle: Text('Task'),
+                  trailing: (widget.task.status == TaskStatus.IN_PROGRESS)
+                      ? buttonWidget[0]
+                      : buttonWidget[1],
                 )
               ];
             },
@@ -73,9 +98,10 @@ class _TaskItemState extends State<TaskItem> {
                     case ConnectionState.waiting:
                       return _showCircularProgress();
                     case ConnectionState.done:
-                      return taskItemPage(
+                      return TaskItemPage(
                         task: widget.task,
-                        taskItemCallback: testRequest,
+                        baseTaskProvider: widget.baseTaskProvider,
+                        isEditable: isEditable,
                       );
                     default:
                       return _showCircularProgress();
@@ -98,35 +124,38 @@ class _TaskItemState extends State<TaskItem> {
         title: new Text("Info"),
         content: new Text("Task was updated"),
         actions: [
-          CupertinoDialogAction(isDefaultAction: true, child: new Text("Close"))
+          CupertinoDialogAction(
+              isDefaultAction: true,
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.pop(context, "Close");
+              })
         ],
       ),
     );
   }
-
-  void testRequest() async {
-    final bool isSuccess =
-        await widget.baseTaskProvider.updateTask(widget.task);
-    if (isSuccess) {
-      setState(() {});
-    }
-  }
 }
 
-class taskItemPage extends StatefulWidget {
+class TaskItemPage extends StatefulWidget {
   final Task task;
-  final VoidCallback taskItemCallback;
+  final BaseTaskProvider baseTaskProvider;
+  final bool isEditable;
 
-  const taskItemPage({Key key, this.task, this.taskItemCallback})
+  const TaskItemPage(
+      {Key key, this.task, this.baseTaskProvider, this.isEditable})
       : super(key: key);
 
   @override
-  _taskItemPageState createState() => _taskItemPageState();
+  _TaskItemPageState createState() => _TaskItemPageState();
 }
 
-class _taskItemPageState extends State<taskItemPage> {
+class _TaskItemPageState extends State<TaskItemPage> {
+  List<Object> images = List<Object>();
+  Future<File> _imageFile;
+
   @override
   void initState() {
+    images.add("Add image");
     super.initState();
     BackButtonInterceptor.add(myInterceptor);
   }
@@ -162,8 +191,10 @@ class _taskItemPageState extends State<taskItemPage> {
                     _showAssignee(),
                     _showDescription(),
                     _shoButton(),
-                    _showGaleryHint(),
+                    if (widget.task.attachmentIds != null) _showGaleryHint(),
                     _showGallery(),
+                    if (widget.isEditable) _showAttachHint(),
+                    if (widget.isEditable) _buildGridView()
                   ],
                 ))),
       ),
@@ -174,7 +205,7 @@ class _taskItemPageState extends State<taskItemPage> {
     return Padding(
       padding: EdgeInsets.only(left: 20, top: 8),
       child: Text(
-        '${widget.task.title}',
+        '${widget.task.title}' + ' ID:' + '${widget.task.id}}',
         style: Styles.body17Medium(),
       ),
     );
@@ -216,7 +247,18 @@ class _taskItemPageState extends State<taskItemPage> {
     return Padding(
       padding: EdgeInsets.only(top: 20, left: 20),
       child: Text(
-        'Attachments (demo)',
+        'Pictures ',
+        style: Styles.body17Medium(),
+        textAlign: TextAlign.left,
+      ),
+    );
+  }
+
+  Widget _showAttachHint() {
+    return Padding(
+      padding: EdgeInsets.only(top: 20, left: 20),
+      child: Text(
+        'Attachments (new)',
         style: Styles.body17Medium(),
         textAlign: TextAlign.left,
       ),
@@ -224,8 +266,14 @@ class _taskItemPageState extends State<taskItemPage> {
   }
 
   Widget _showGallery() {
-    return Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, 0), child: GalleryExample());
+    return (widget.task.attachmentIds != null)
+        ? Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+            child: GalleryExample(
+              baseTaskProvider: widget.baseTaskProvider,
+              attachArray: widget.task.attachmentIds,
+            ))
+        : Container();
   }
 
   Widget _shoButton() {
@@ -243,7 +291,7 @@ class _taskItemPageState extends State<taskItemPage> {
                   style: new TextStyle(
                       fontSize: 18.0, color: CupertinoColors.white)),
               onPressed: () {
-                widget.taskItemCallback();
+                testUpdateTaskAttach(images);
               },
             ),
           ));
@@ -257,6 +305,91 @@ class _taskItemPageState extends State<taskItemPage> {
         return "Get task for ${widget.task.reward} credits";
       case TaskStatus.IN_PROGRESS:
         return "Approve task";
+    }
+  }
+
+  Widget _buildGridView() {
+    return GridView.count(
+      shrinkWrap: true,
+      crossAxisCount: 3,
+      childAspectRatio: 1,
+      children: List.generate(images.length, (index) {
+        if (images[index] is File) {
+          File imageFile = images[index];
+          return Card(
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: <Widget>[
+                Image.file(
+                  imageFile,
+                  width: 300,
+                  height: 300,
+                ),
+                Positioned(
+                  right: 5,
+                  top: 5,
+                  child: InkWell(
+                    child: Icon(
+                      Icons.remove_circle,
+                      size: 20,
+                      color: Colors.red,
+                    ),
+                    onTap: () {
+                      setState(() {
+                        images.replaceRange(index, index + 1, ['Add Image']);
+                        images.removeLast();
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Card(
+            child: IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                _onAddImageClick(index);
+              },
+            ),
+          );
+        }
+      }),
+    );
+  }
+
+  Future _onAddImageClick(int index) async {
+    setState(() {
+      _imageFile = ImagePicker.pickImage(source: ImageSource.gallery);
+      getFileImage(index);
+    });
+  }
+
+  void getFileImage(int index) async {
+//    var dir = await path_provider.getTemporaryDirectory();
+
+    _imageFile.then((file) async {
+      setState(() {
+        images.replaceRange(index, index + 1, [file]);
+        images.add("Add Image");
+      });
+    });
+  }
+
+  void testRequest() async {
+    final bool isSuccess =
+        await widget.baseTaskProvider.updateTask(widget.task);
+    if (isSuccess) {
+      setState(() {});
+    }
+  }
+
+  void testUpdateTaskAttach(List<Object> files) async {
+    final bool isSuccess = await widget.baseTaskProvider
+        .updateTaskWithAttachments(files, widget.task);
+    if (isSuccess) {
+      setState(() {});
     }
   }
 }
