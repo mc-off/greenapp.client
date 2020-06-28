@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/task_creation.dart';
+import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/pages/task_list.dart';
 import 'package:greenapp/services/base_auth.dart';
 import 'package:greenapp/services/base_task_provider.dart';
@@ -38,28 +39,54 @@ class _TasksTabState extends State<TasksTab> {
     1: Text("Assigned"),
   };
 
-  final buttonWidget = <Widget>[
-    CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: () {
-        debugPrint("Check TODO clicked");
-      },
-      child: const Icon(
-        CupertinoIcons.check_mark_circled,
-        semanticLabel: 'VoteToDo',
-      ),
-    ),
-    CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: () {
-        debugPrint("Check resolve clicked");
-      },
-      child: const Icon(
-        CupertinoIcons.check_mark_circled,
-        semanticLabel: 'VoteResolve',
-      ),
-    ),
-  ];
+//  final buttonWidget = <Widget>[
+//    CupertinoButton(
+//      padding: EdgeInsets.zero,
+//      onPressed: () {
+//        showCupertinoModalPopup(
+//          context: context,
+//          builder: (BuildContext context) => CupertinoActionSheet(
+//              title: const Text('Choose Options'),
+//              message: const Text('Your options are '),
+//              actions: <Widget>[
+//                CupertinoActionSheetAction(
+//                  child: const Text('One'),
+//                  onPressed: () {
+//                    Navigator.pop(context, 'One');
+//                  },
+//                ),
+//                CupertinoActionSheetAction(
+//                  child: const Text('Two'),
+//                  onPressed: () {
+//                    Navigator.pop(context, 'Two');
+//                  },
+//                )
+//              ],
+//              cancelButton: CupertinoActionSheetAction(
+//                child: const Text('Cancel'),
+//                isDefaultAction: true,
+//                onPressed: () {
+//                  Navigator.pop(context, 'Cancel');
+//                },
+//              )),
+//        );
+//      },
+//      child: const Icon(
+//        CupertinoIcons.check_mark_circled,
+//        semanticLabel: 'VoteToDo',
+//      ),
+//    ),
+//    CupertinoButton(
+//      padding: EdgeInsets.zero,
+//      onPressed: () {
+//        debugPrint("Check resolve clicked");
+//      },
+//      child: const Icon(
+//        CupertinoIcons.check_mark_circled,
+//        semanticLabel: 'VoteResolve',
+//      ),
+//    ),
+//  ];
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +112,46 @@ class _TasksTabState extends State<TasksTab> {
                       CupertinoPageRoute(
                           builder: (context) => TaskCreationPage(
                                 baseTaskProvider: widget.baseTaskProvider,
+                                createCallback: openCreatedTask,
                               )));
                 },
               ),
-              trailing: buttonWidget[theriGroupVakue],
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  showCupertinoModalPopup(
+                    context: context,
+                    builder: (BuildContext context) => CupertinoActionSheet(
+                        title: const Text('Choose Options'),
+                        message: const Text('Your options are '),
+                        actions: <Widget>[
+                          CupertinoActionSheetAction(
+                            child: const Text('Get task by id DEMO'),
+                            onPressed: () {
+                              Navigator.pop(context, 'Get task by id DEMO');
+                            },
+                          ),
+                          CupertinoActionSheetAction(
+                            child: const Text('Vote for tasks DEMO'),
+                            onPressed: () {
+                              Navigator.pop(context, 'Vote for tasks DEMO');
+                            },
+                          )
+                        ],
+                        cancelButton: CupertinoActionSheetAction(
+                          child: const Text('Cancel'),
+                          isDefaultAction: true,
+                          onPressed: () {
+                            Navigator.pop(context, 'Cancel');
+                          },
+                        )),
+                  );
+                },
+                child: const Icon(
+                  CupertinoIcons.ellipsis,
+                  semanticLabel: 'VoteToDo',
+                ),
+              ),
             ),
             SliverPersistentHeader(
               delegate: _SliverAppBarDelegate(Container(
@@ -155,6 +218,7 @@ class _TasksTabState extends State<TasksTab> {
                             baseTaskProvider: widget.baseTaskProvider,
                             taskList: projectSnapshot.data,
                             taskStatus: segmentValue,
+                            updateCallback: update,
                           );
                   }
                 default:
@@ -163,7 +227,20 @@ class _TasksTabState extends State<TasksTab> {
             }));
   }
 
-  void update() {}
+  void update() {
+    debugPrint("Update page");
+    setState(() {});
+  }
+
+  void openCreatedTask(Task task) {
+    Navigator.push(
+        context,
+        CupertinoPageRoute(
+            builder: (context) => TaskItem(
+                  baseTaskProvider: widget.baseTaskProvider,
+                  task: task,
+                )));
+  }
 
   _tryAgainButtonClick(bool _) => setState(() {
         _showCircularProgress();
@@ -182,42 +259,6 @@ class _TasksTabState extends State<TasksTab> {
         textAlign: TextAlign.center,
       ),
     );
-  }
-
-  Future<List<Task>> getTasksList() async {
-    debugPrint("getTasksList");
-    http.Response response = await http.post(
-      "https://greenapp-gateway.herokuapp.com/task-provider/tasks",
-      headers: <String, String>{
-        'Authorization':
-            "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzemIwOTkyM0BjdW9seS5jb20iLCJleHAiOjE1OTI3NjQ0MjIsImlhdCI6MTU5Mjc0NjQyMn0.ouTIaGc6hLPE4aKa-TCj_LW2ovkHQ-kCfWhgdiaz9Q9ED14m5uwPH0vczZ82HO9fMcEieZ1va4ZWrs8wJdFhMw",
-        'Content-type': 'application/json',
-      },
-      body: json.encode({
-        'status': EnumToString.parse(TaskStatus.CREATED),
-        "limit": 10,
-        "offset": 0
-      }),
-    );
-    if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body.toString());
-      final t = json.decode(response.body);
-      List<Task> taskList = [];
-      for (Map i in t) {
-        taskList.add(Task.fromJson(i));
-      }
-      return taskList;
-    } else {
-      // If the server did no
-      //t return a 201 CREATED response,
-      // then throw an exception
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body.toString());
-      throw Exception('Failed to parse tasks');
-    }
   }
 }
 

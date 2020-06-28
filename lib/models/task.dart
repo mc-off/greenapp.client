@@ -5,9 +5,11 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'task.g.dart';
 
+enum VoteChoice { APPROVE, REJECT }
+
 @JsonSerializable(includeIfNull: false)
 class Task {
-  final int id;
+  int id;
 
   //null
   String title;
@@ -18,18 +20,22 @@ class Task {
   Coordinate coordinate;
   TaskType type;
   int reward;
+
   List<int> attachmentIds;
 
   //null
   int assignee;
 
   //null
-  int updated;
+  String updated;
 
   //null
   String dueDate;
   int createdBy;
-  int created;
+
+  String created;
+
+  String address;
 
   Task(
       {this.id,
@@ -65,7 +71,29 @@ class Task {
 //        created: json['created'],
 //      );
 
-  Map<String, dynamic> toJson() => _$TaskToJson(this);
+  Map<String, dynamic> toJson() {
+    final val = <String, dynamic>{};
+
+    void writeNotNull(String key, dynamic value) {
+      if (value != null) {
+        val[key] = value;
+      }
+    }
+
+    writeNotNull('id', id);
+    writeNotNull('title', title);
+    writeNotNull('description', description);
+    writeNotNull('status', _$TaskStatusEnumMap[status]);
+    writeNotNull('coordinate', coordinate);
+    writeNotNull('type', _$TaskTypeEnumMap[type]);
+    writeNotNull('reward', reward);
+    writeNotNull('assignee', assignee);
+    writeNotNull('updated', updated);
+    writeNotNull('dueDate', dueDate);
+    writeNotNull('createdBy', createdBy);
+    writeNotNull('created', created);
+    return val;
+  }
 //  Map<String, dynamic> toJson() => {
 //        'id': id,
 //        'title': title,

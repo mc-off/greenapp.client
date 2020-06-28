@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/text-styles.dart';
 import 'package:greenapp/models/unit.dart';
+import 'package:greenapp/pages/gallery/galery_example2.dart';
 import 'package:greenapp/pages/gallery/gallery_example.dart';
 import 'package:greenapp/services/base_auth.dart';
 import 'package:greenapp/utils/styles.dart';
@@ -181,7 +182,7 @@ class UnitRowItem extends StatelessWidget {
                       ),
                       const Padding(padding: EdgeInsets.only(top: 2)),
                       Text(
-                        '\$${unit.description}',
+                        '${unit.description}',
                         style: Styles.body13RegularGray(),
                       ),
                       const Padding(padding: EdgeInsets.only(top: 8)),
@@ -306,7 +307,7 @@ class _UnitItemState extends State<UnitItem> {
             disabledColor: CupertinoColors.quaternarySystemFill,
             pressedOpacity: 0.4,
             borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-            child: new Text('Buy for ${widget.unit.price}',
+            child: new Text('Buy for ${widget.unit.price} DEMO',
                 style: new TextStyle(
                     fontSize: 18.0, color: CupertinoColors.white)),
             onPressed: testRequest,
@@ -327,7 +328,7 @@ class _UnitItemState extends State<UnitItem> {
 
   Widget _showGallery() {
     return Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, 0), child: GalleryExample());
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 0), child: GalleryExample2());
   }
 
   int getPicNumber() {}

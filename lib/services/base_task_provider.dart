@@ -16,11 +16,17 @@ abstract class BaseTaskProvider {
 
   Future<int> createTask(List<Object> objects, Task task, UserType userType);
 
-  Future<Uint8List> getAttachment(int attachId);
+  Future<NetworkImage> getAttachment(int attachId);
 
   Future<Task> getTask(int id);
 
   Future<bool> updateTask(Task task);
 
   Future<bool> updateTaskWithAttachments(List<Object> objects, Task task);
+
+  Future<bool> voteForTask(Task task, VoteChoice voteChoice);
+
+  String getAuth();
+
+  int getUserId();
 }

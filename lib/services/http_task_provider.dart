@@ -6,6 +6,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:http_parser/src/media_type.dart';
 import 'package:image_jpeg/image_jpeg.dart';
@@ -96,10 +97,13 @@ class HttpTaskProvider {
 
   Future<bool> updateTaskWithAttachments(
       List<Object> objects, Task task) async {
-    var uri =
-        Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task');
+    var queryParameters = {
+      'detach': false.toString(),
+    };
+    var uri = Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task',
+        queryParameters);
 
-    debugPrint('Create: ' + json.encode(task));
+    debugPrint('Update task: ' + json.encode(task));
 
     final dio.Dio dioClient = new dio.Dio();
     dioClient.options.headers["Authorization"] = _bearerAuth;
@@ -127,7 +131,7 @@ class HttpTaskProvider {
               contentType: MediaType.parse("image/jpeg"))));
     }
 
-    final response = await dioClient.postUri(uri, data: formData);
+    final response = await dioClient.putUri(uri, data: formData);
 
     if (response.statusCode == 200) {
       debugPrint(response.statusCode.toString());
@@ -218,8 +222,10 @@ class HttpTaskProvider {
       final t = json.decode(response.body);
       List<Task> taskList = [];
       for (Map i in t) {
+        debugPrint(i.toString());
         taskList.add(Task.fromJson(i));
       }
+      debugPrint(EnumToString.parse(taskList.first.status));
       return taskList;
     } else {
       // If the server did no
@@ -272,10 +278,20 @@ class HttpTaskProvider {
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
       // then parse the JSON.
+      debugPrint("Task getted");
       debugPrint(response.statusCode.toString());
       debugPrint(response.body.toString());
       final t = json.decode(response.body);
-      return Task.fromJson(t);
+      debugPrint(t.toString());
+
+      Task task = Task.fromJson(jsonDecode(response.body));
+      final coordinates =
+          new Coordinates(task.coordinate.latitude, task.coordinate.longitude);
+      var addresses =
+          await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      var first = addresses.first;
+      task.address = first.addressLine;
+      return task;
     } else {
       // If the server did no
       //t return a 201 CREATED response,
@@ -287,29 +303,48 @@ class HttpTaskProvider {
     }
   }
 
-  Future<Uint8List> getAttachment(int id) async {
-    http.Response response = await http.get(
-      "https://greenapp-gateway.herokuapp.com/task-provider/attachment/$id",
+  Future<NetworkImage> getAttachment(int id) async {
+    final t = NetworkImage(
+        "https://greenapp-gateway.herokuapp.com/task-provider/attachment/$id",
+        headers: <String, String>{
+          'Authorization': _bearerAuth,
+        });
+    return t;
+  }
+
+  Future<bool> voteForTask(
+      Task task, VoteChoice voteChoice, int clientId) async {
+    Map body = ({
+      "taskId": task.id,
+      "clientId": clientId,
+      "type": EnumToString.parse(voteChoice)
+    });
+
+    debugPrint(body.toString());
+    http.Response response = await http.post(
+      "https://greenapp-gateway.herokuapp.com/task-resolver/vote",
       headers: <String, String>{
         'Authorization': _bearerAuth,
+        'Content-type': 'application/json',
       },
+      body: json.encode(body),
     );
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
       // then parse the JSON.
-      debugPrint("Success");
       debugPrint(response.statusCode.toString());
       debugPrint(response.body.toString());
-      return response.bodyBytes;
+
+      return true;
     } else {
       // If the server did no
       //t return a 201 CREATED response,
       // then throw an exception
-      debugPrint("Fail");
       debugPrint(response.statusCode.toString());
       debugPrint(response.body.toString());
       if (response.statusCode == 401) logoutCallback();
-      throw Exception('Failed to get file');
+      return false;
+      throw Exception('Failed to parse tasks');
     }
   }
 }

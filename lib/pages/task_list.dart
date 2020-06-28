@@ -13,8 +13,13 @@ class TaskList extends StatefulWidget {
   final BaseTaskProvider baseTaskProvider;
   final List<Task> taskList;
   final TaskStatus taskStatus;
+  final VoidCallback updateCallback;
 
-  TaskList({this.baseTaskProvider, this.taskList, this.taskStatus});
+  TaskList(
+      {this.baseTaskProvider,
+      this.taskList,
+      this.taskStatus,
+      this.updateCallback});
 
   @override
   _TaskListState createState() => _TaskListState();
@@ -65,6 +70,7 @@ class _TaskListState extends State<TaskList> {
                       builder: (context) => TaskItem(
                             baseTaskProvider: widget.baseTaskProvider,
                             task: tasks[index],
+                            updateCallback: widget.updateCallback,
                           )));
             },
             child: new TaskRowItem(task: tasks[index]));
