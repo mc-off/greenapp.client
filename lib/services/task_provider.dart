@@ -89,6 +89,7 @@ class TaskProvider implements BaseTaskProvider {
   @override
   Future<bool> updateTaskWithAttachments(
       List<Object> objects, Task task) async {
+    task.assignee = _user.clientId;
     return _httpTaskProvider.updateTaskWithAttachments(objects, task);
   }
 

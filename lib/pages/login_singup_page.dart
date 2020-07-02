@@ -185,6 +185,16 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                 email: email)));
   }
 
+  void _PasswordRecoveryPage(String email) {
+    Navigator.push(
+        context,
+        CupertinoPageRoute(
+            builder: (context) => ValidateEmailPage(
+                auth: widget.auth,
+                validateCallback: validateCallback,
+                email: email)));
+  }
+
   void validateCallback() {
     _isLoginForm = true;
     validateAndSubmit();
