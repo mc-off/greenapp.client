@@ -42,8 +42,9 @@ class HttpAuth {
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
       // then parse the JSON.
-      print(response.toString());
+      print(response.body.toString());
       User user = User.fromJson(json.decode(response.body));
+      debugPrint(user.toJson().toString());
       updateCacheAndUser(user);
       return user;
     } else {
@@ -146,12 +147,12 @@ class HttpAuth {
   }
 
   void updateCache(User user) {
-    storage.writeSession(user.toString());
+    storage.writeSession(user);
   }
 
   Future<User> getFromCache() async {
-    String readedSession = await storage.readSession();
-    return User(token: readedSession);
+    final readedSession = await storage.readSession();
+    return readedSession;
   }
 
   Future<void> clearCache() async {
@@ -171,25 +172,27 @@ class SessionStorage {
     return File('$path/session.txt');
   }
 
-  Future<String> readSession() async {
+  Future<User> readSession() async {
     try {
       final file = await _localFile;
 
       // Read the file
       String contents = await file.readAsString();
+      debugPrint('Contentents is ' + contents);
 
-      return contents;
+      return User.fromJson(json.decode(contents));
     } catch (e) {
       // If encountering an error, return 0
-      return "";
+      return User(clientId: null, token: "");
     }
   }
 
-  Future<File> writeSession(String session) async {
+  Future<File> writeSession(User session) async {
     final file = await _localFile;
 
     // Write the file
-    return file.writeAsString('$session');
+    debugPrint("Save file as ${json.encode(session)}");
+    return file.writeAsString('${json.encode(session)}');
   }
 
   Future<File> deleteSession() async {

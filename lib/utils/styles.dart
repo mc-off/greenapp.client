@@ -46,8 +46,26 @@ abstract class Styles {
     return TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
   }
 
+  static TextStyle body17Regular() {
+    return TextStyle(fontSize: 18, fontWeight: FontWeight.normal);
+  }
+
   static TextStyle body15Regular() {
     return TextStyle(fontSize: 16, fontWeight: FontWeight.normal);
+  }
+
+  static TextStyle body15RegularGray() {
+    return TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        color: CupertinoColors.inactiveGray);
+  }
+
+  static TextStyle body13RegularGray() {
+    return TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: CupertinoColors.inactiveGray);
   }
 
   static TextStyle taskPrice() {
