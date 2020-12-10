@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
             child: Text(
               "Sign out",
               style: TextStyle(
-                color: CupertinoColors.activeBlue,
+                color: CupertinoColors.systemBlue,
               ),
             ),
           ),
