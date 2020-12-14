@@ -1,6 +1,22 @@
 import 'package:flutter/cupertino.dart';
+import 'package:greenapp/models/text-styles.dart';
 
 import 'package:greenapp/services/base_auth.dart';
+
+enum _DoubleConstants { textFieldContainerHeight, textFieldContainerWidth }
+
+extension _DoubleConstantsExtension on _DoubleConstants {
+  double get value {
+    switch (this) {
+      case _DoubleConstants.textFieldContainerHeight:
+        return 50.0;
+      case _DoubleConstants.textFieldContainerWidth:
+        return 80.0;
+      default:
+        return null;
+    }
+  }
+}
 
 class LoginSignUpPage extends StatefulWidget {
   LoginSignUpPage({this.auth, this.loginCallback});
@@ -16,6 +32,9 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
   final _formKey = new GlobalKey<FormState>();
   TextEditingController _email = TextEditingController();
   TextEditingController _password = TextEditingController();
+  TextEditingController _firstName = TextEditingController();
+  TextEditingController _secondName = TextEditingController();
+  TextEditingController _birthDate = TextEditingController();
   String _errorMessage;
 
   bool _isLoginForm;
@@ -52,8 +71,12 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               await widget.auth.signIn(_email.value.text, _password.value.text);
           print('Signed in: $userId');
         } else {
-          userId =
-              await widget.auth.signUp(_email.value.text, _password.value.text);
+          userId = await widget.auth.signUp(
+              _email.value.text,
+              _password.value.text,
+              _firstName.value.text,
+              _secondName.value.text,
+              _birthDate.value.text);
           //widget.auth.sendEmailVerification();
           //_showVerifyEmailSentDialog();
           print('Signed up user: $userId');
@@ -112,9 +135,13 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           child: new ListView(
             shrinkWrap: true,
             children: <Widget>[
-              showLogo(),
+              //showLogo(),
+              showMainHint(),
               showEmailInput(),
               showPasswordInput(),
+              showFirstNameInput(),
+              showSecondNameInput(),
+              showBirthDateInput(),
               showPrimaryButton(),
               showSecondaryButton(),
               showErrorMessage(),
@@ -133,11 +160,25 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
     );
   }
 
+  Widget showMainHint() {
+    return new Container(
+      height: 240,
+      width: 200,
+      child: Center(
+        child: Text(
+          _isLoginForm ? "User account" : "Registration",
+          style: TextStyles.largeTitleRegular(),
+          //textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
   Widget showLogo() {
     return new Hero(
       tag: 'hero',
       child: Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 70.0, 0.0, 0.0),
+        padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
         child: Image(
           height: 200,
           width: 200,
@@ -150,14 +191,15 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showErrorMessage() {
     if (_errorMessage.length > 0 && _errorMessage != null) {
-      return new Text(
+      return new CupertinoAlertDialog(
+          content: Text(
         _errorMessage,
         style: TextStyle(
             fontSize: 13.0,
             color: CupertinoColors.systemRed,
             height: 1.0,
-            fontWeight: FontWeight.w300),
-      );
+            fontWeight: FontWeight.bold),
+      ));
     } else {
       return new Container(
         height: 0.0,
@@ -167,7 +209,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showPrimaryButton() {
     return new Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
+        padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 40.0 : 30.0, 0.0, 0.0),
         child: SizedBox(
           height: 50.0,
           child: new CupertinoButton.filled(
@@ -192,66 +234,159 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showEmailInput() {
     return new Padding(
-      padding: const EdgeInsets.fromLTRB(0.0, 100.0, 0.0, 0.0),
+      padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 0.0 : 00.0, 0.0, 0.0),
       child: new CupertinoTextField(
         maxLines: 1,
         keyboardType: TextInputType.emailAddress,
-        autofocus: false,
+        autofocus: true,
         controller: _email,
-        prefix: Padding(
-          padding: EdgeInsets.all(4.0),
-          child: Icon(
-            CupertinoIcons.mail_solid,
-          ),
-        ),
         maxLengthEnforced: true,
         maxLength: 30,
         placeholder: 'Email',
         showCursor: true,
-        //onSubmitted: (value) => _email = value.trim(),
-        //validator: (value) => value.isEmpty ? 'Email can\'t be empty' : null,
-        decoration: BoxDecoration(
-          border: Border.all(
-            width: 2.0,
-            color: CupertinoColors.inactiveGray,
+        prefix: Container(
+          height: _DoubleConstants.textFieldContainerHeight.value,
+          width: _DoubleConstants.textFieldContainerWidth.value,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Логин",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          borderRadius: BorderRadius.circular(32.0),
+        ),
+        decoration: BoxDecoration(
+          border: Border.symmetric(
+            vertical: BorderSide(
+              width: 1.0,
+              color: CupertinoColors.separator,
+            ),
+          ),
+          //borderRadius: BorderRadius.circular(32.0),
         ),
       ),
     );
   }
 
+  Widget showFirstNameInput() {
+    return _isLoginForm
+        ? new Container()
+        : new Padding(
+            padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+            child: new CupertinoTextField(
+              maxLines: 1,
+              obscureText: false,
+              autofocus: true,
+              controller: _firstName,
+              placeholder: "Name",
+              prefix: Container(
+                height: _DoubleConstants.textFieldContainerHeight.value,
+                width: _DoubleConstants.textFieldContainerWidth.value,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Имя",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              decoration: BoxDecoration(
+                  border: Border(
+                bottom: BorderSide(
+                  width: 1.0,
+                  color: CupertinoColors.separator,
+                ),
+              )),
+            ),
+          );
+  }
+
+  Widget showSecondNameInput() {
+    return _isLoginForm
+        ? new Container()
+        : new Padding(
+            padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+            child: new CupertinoTextField(
+              maxLines: 1,
+              obscureText: false,
+              autofocus: true,
+              controller: _secondName,
+              placeholder: "Surname",
+              prefix: Container(
+                height: _DoubleConstants.textFieldContainerHeight.value,
+                width: _DoubleConstants.textFieldContainerWidth.value,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Фамилия",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              decoration: BoxDecoration(
+                  border: Border(
+                bottom: BorderSide(
+                  width: 1.0,
+                  color: CupertinoColors.separator,
+                ),
+              )),
+            ),
+          );
+  }
+
+  Widget showBirthDateInput() {
+    return _isLoginForm
+        ? new Container()
+        : new Padding(
+            padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+            child: new CupertinoTextField(
+              maxLines: 1,
+              obscureText: false,
+              autofocus: true,
+              autocorrect: true,
+              keyboardType: TextInputType.datetime,
+              controller: _birthDate,
+              placeholder: "Birth date",
+              prefix: Container(
+                height: _DoubleConstants.textFieldContainerHeight.value,
+                width: _DoubleConstants.textFieldContainerWidth.value,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Дата",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              decoration: BoxDecoration(
+                  border: Border(
+                bottom: BorderSide(
+                  width: 1.0,
+                  color: CupertinoColors.separator,
+                ),
+              )),
+            ),
+          );
+  }
+
   Widget showPasswordInput() {
     return new Padding(
-      padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
       child: new CupertinoTextField(
         maxLines: 1,
         obscureText: true,
-        autofocus: false,
+        autofocus: true,
+        keyboardType: TextInputType.visiblePassword,
         controller: _password,
-        placeholder: "Password",
-        prefix: Padding(
-          padding: EdgeInsets.all(4.0),
-          child: Icon(
-            CupertinoIcons.settings_solid,
+        placeholder: "Profile's password",
+        prefix: Container(
+          height: _DoubleConstants.textFieldContainerHeight.value,
+          width: _DoubleConstants.textFieldContainerWidth.value,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Пароль",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-//        decoration: BoxDecoration(
-//          border: Border.all(
-//            width: 2.0,
-//            color: CupertinoColors.inactiveGray,
-//          ),
-//          borderRadius: BorderRadius.circular(32.0),
-//        ),
-        //onChanged: (value) => value.isEmpty ? 'Password can\'t be empty' : null,
-        //onSubmitted: (value) => _email = value.trim(),
         decoration: BoxDecoration(
-          border: Border.all(
-            width: 2.0,
-            color: CupertinoColors.inactiveGray,
+            border: Border(
+          bottom: BorderSide(
+            width: 1.0,
+            color: CupertinoColors.separator,
           ),
-          borderRadius: BorderRadius.circular(32.0),
-        ),
+        )),
       ),
     );
   }
