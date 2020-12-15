@@ -17,6 +17,11 @@ class HttpAuth {
     return _user;
   }
 
+  Future<void> signOut() {
+    clearCache();
+    _user = getFromCache();
+  }
+
   Future<User> signInWithEmailAndPassword(String email, String password) async {
     final http.Response response = await http.post(
       'https://reqres.in/api/login',
@@ -46,10 +51,8 @@ class HttpAuth {
   Future<User> signUpWithEmailAndPassword(String email, String password,
       String firstName, String lastName, String birthDate) async {
     final http.Response response = await http.post(
-      'https://greenapp-authenticate-service.herokuapp.com/auth/sign/up/',
-      headers: {
-        'Content-type': 'application/json',
-      },
+      'https://greenapp-auth-service.herokuapp.com/auth/sign/up/',
+      headers: {'Content-type': 'application/json', 'X-GREEN-APP-ID': 'GREEN'},
       body: json.encode({
         'firstName': firstName,
         'lastName': lastName,
@@ -87,6 +90,10 @@ class HttpAuth {
     String readedSession = await storage.readSession();
     return User(token: readedSession);
   }
+
+  Future<void> clearCache() async {
+    await storage.deleteSession();
+  }
 }
 
 class SessionStorage {
@@ -120,5 +127,12 @@ class SessionStorage {
 
     // Write the file
     return file.writeAsString('$session');
+  }
+
+  Future<File> deleteSession() async {
+    final file = await _localFile;
+
+    // Write the file
+    return file.delete();
   }
 }

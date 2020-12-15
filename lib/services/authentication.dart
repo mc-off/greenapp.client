@@ -28,9 +28,9 @@ class Auth implements BaseAuth {
     return user.token;
   }
 
-//Future<void> signOut() async {
-//    return _firebaseAuth.signOut();
-//  }
+  Future<void> signOut() async {
+    return _httpAuth.signOut();
+  }
 
   Future<String> signUp(String email, String password, String firstName,
       String lastName, String birthDate) async {
