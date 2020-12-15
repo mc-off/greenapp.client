@@ -1,9 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/text-styles.dart';
+import 'package:greenapp/models/user.dart';
+import 'package:greenapp/pages/validate_email_page.dart';
 
 import 'package:greenapp/services/base_auth.dart';
 
-enum _DoubleConstants { textFieldContainerHeight, textFieldContainerWidth }
+enum _DoubleConstants {
+  textFieldContainerHeight,
+  textFieldContainerWidth,
+  textFieldDecorationBorderWidth
+}
 
 extension _DoubleConstantsExtension on _DoubleConstants {
   double get value {
@@ -12,6 +18,8 @@ extension _DoubleConstantsExtension on _DoubleConstants {
         return 50.0;
       case _DoubleConstants.textFieldContainerWidth:
         return 80.0;
+      case _DoubleConstants.textFieldDecorationBorderWidth:
+        return 0.6;
       default:
         return null;
     }
@@ -39,6 +47,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   bool _isLoginForm;
   bool _isLoading;
+  bool _isValidated;
 
   // Check if form is valid before perform login or signup
   bool validateAndSave() {
@@ -71,15 +80,18 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               await widget.auth.signIn(_email.value.text, _password.value.text);
           print('Signed in: $userId');
         } else {
-          userId = await widget.auth.signUp(
+          bool isCodeSended = await widget.auth.signUp(
               _email.value.text,
               _password.value.text,
               _firstName.value.text,
               _secondName.value.text,
               _birthDate.value.text);
+          if (isCodeSended) {
+            debugPrint('Code sended to ${_email.value.text}');
+            _showValidationEmailPage(_email.value.text);
+          }
           //widget.auth.sendEmailVerification();
           //_showVerifyEmailSentDialog();
-          print('Signed up user: $userId');
         }
         setState(() {
           _isLoading = false;
@@ -158,6 +170,22 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
       height: 0.0,
       width: 0.0,
     );
+  }
+
+  void _showValidationEmailPage(String email) {
+    Navigator.push(
+        context,
+        CupertinoPageRoute(
+            builder: (context) => ValidateEmailPage(
+                auth: widget.auth,
+                validateCallback: validateCallback,
+                email: email)));
+  }
+
+  void validateCallback() {
+    widget.auth
+        .getCurrentUser()
+        .then((user) => {if (user.token.isNotEmpty) widget.loginCallback()});
   }
 
   Widget showMainHint() {
@@ -256,7 +284,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         decoration: BoxDecoration(
           border: Border.symmetric(
             vertical: BorderSide(
-              width: 1.0,
+              width: _DoubleConstants.textFieldDecorationBorderWidth.value,
               color: CupertinoColors.separator,
             ),
           ),
@@ -289,7 +317,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               decoration: BoxDecoration(
                   border: Border(
                 bottom: BorderSide(
-                  width: 1.0,
+                  width: _DoubleConstants.textFieldDecorationBorderWidth.value,
                   color: CupertinoColors.separator,
                 ),
               )),
@@ -320,7 +348,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               decoration: BoxDecoration(
                   border: Border(
                 bottom: BorderSide(
-                  width: 1.0,
+                  width: _DoubleConstants.textFieldDecorationBorderWidth.value,
                   color: CupertinoColors.separator,
                 ),
               )),
@@ -353,7 +381,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               decoration: BoxDecoration(
                   border: Border(
                 bottom: BorderSide(
-                  width: 1.0,
+                  width: _DoubleConstants.textFieldDecorationBorderWidth.value,
                   color: CupertinoColors.separator,
                 ),
               )),
@@ -383,7 +411,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         decoration: BoxDecoration(
             border: Border(
           bottom: BorderSide(
-            width: 1.0,
+            width: _DoubleConstants.textFieldDecorationBorderWidth.value,
             color: CupertinoColors.separator,
           ),
         )),
