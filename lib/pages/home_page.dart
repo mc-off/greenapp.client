@@ -24,15 +24,19 @@ class _HomePageState extends State<HomePage> {
       tabBar: CupertinoTabBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.home),
+            icon: Icon(CupertinoIcons.folder_solid),
             title: Text("Tasks"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.location_solid),
+            title: Text("Map"),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.shopping_cart),
             title: Text("Market"),
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.profile_circled),
+            icon: Icon(CupertinoIcons.person_solid),
             title: Text("Profile"),
           ),
         ],
@@ -50,11 +54,18 @@ class _HomePageState extends State<HomePage> {
           case 1:
             returnValue = CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: MarketTab(),
+                child: MapTab(),
               );
             });
             break;
           case 2:
+            returnValue = CupertinoTabView(builder: (context) {
+              return CupertinoPageScaffold(
+                child: MarketTab(),
+              );
+            });
+            break;
+          case 3:
             returnValue = CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: ProfileTab(
