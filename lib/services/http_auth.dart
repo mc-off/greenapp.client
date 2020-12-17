@@ -30,14 +30,12 @@ class HttpAuth {
 
   Future<User> signInWithEmailAndPassword(String email, String password) async {
     final http.Response response = await http.post(
-      'https://greenapp-gateway.herokuapp.com/auth/sign/in/',
+      'https://greenapp-gateway.herokuapp.com/authenticate',
       headers: {
         'Content-type': 'application/json',
-        'X-GREEN-APP-ID': 'GREEN',
-        'authorization': basicAuth
       },
       body: json.encode({
-        'mailAddress': email,
+        'username': email,
         'password': password,
       }),
     );
@@ -51,7 +49,8 @@ class HttpAuth {
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
-      print(response.toString());
+      print(response.statusCode);
+      print(response.body);
       throw Exception('Failed to sign in');
     }
   }
@@ -59,11 +58,9 @@ class HttpAuth {
   Future<bool> signUpWithEmailAndPassword(String email, String password,
       String firstName, String lastName, String birthDate) async {
     final http.Response response = await http.post(
-      'https://greenapp-gateway.herokuapp.com/auth/sign/up/',
+      'https://greenapp-gateway.herokuapp.com/auth/sign/up',
       headers: <String, String>{
         'Content-type': 'application/json',
-        'X-GREEN-APP-ID': 'GREEN',
-        'authorization': basicAuth
       },
       body: json.encode({
         'firstName': firstName,
@@ -89,13 +86,11 @@ class HttpAuth {
     }
   }
 
-  Future<User> sendEmailVerification(String email, String code) async {
+  Future<bool> sendEmailVerification(String email, String code) async {
     final http.Response response = await http.post(
-      'https://greenapp-gateway.herokuapp.com/auth/sign/verify2fa/',
+      'https://greenapp-gateway.herokuapp.com/auth/verify2fa',
       headers: <String, String>{
         'Content-type': 'application/json',
-        'X-GREEN-APP-ID': 'GREEN',
-        'authorization': basicAuth
       },
       body: json.encode({'mailAddress': email, 'twoFaCode': int.parse(code)}),
     );
@@ -104,10 +99,8 @@ class HttpAuth {
       // then parse the JSON.
       debugPrint(response.statusCode.toString());
       debugPrint(response.body);
-      User user = User.fromJson(json.decode(response.body));
-      debugPrint("User validated and stored= " + user.token);
-      updateCacheAndUser(user);
-      return user;
+      debugPrint("User validated");
+      return true;
     } else {
       // If the server did no
       //t return a 201 CREATED response,
@@ -115,6 +108,35 @@ class HttpAuth {
       debugPrint(response.statusCode.toString());
       debugPrint(response.body);
       throw Exception('Failed to validate user');
+    }
+  }
+
+  Future<bool> resendEmailVerification(String email) async {
+    var queryParameters = {
+      'mail': email,
+    };
+    var uri = Uri.https(
+        'greenapp-gateway.herokuapp.com', '/auth/resend2fa', queryParameters);
+    final http.Response response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-type': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body);
+      debugPrint("Code sended to $email");
+      return true;
+    } else {
+      // If the server did no
+      //t return a 201 CREATED response,
+      // then throw an exception
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body);
+      throw Exception('Failed to resend code to $email');
     }
   }
 
