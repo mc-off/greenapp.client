@@ -18,9 +18,17 @@ class Auth implements BaseAuth {
 //  }
 
   @override
-  Future<String> sendEmailVerification(String email, String code) async {
-    User user = await _httpAuth.sendEmailVerification(email, code);
-    return user.token;
+  Future<bool> sendEmailVerification(String email, String code) async {
+    bool isValidated = false;
+    isValidated = await _httpAuth.sendEmailVerification(email, code);
+    return isValidated;
+  }
+
+  @override
+  Future<bool> resendEmailVerification(String email) async {
+    bool isSended = false;
+    isSended = await _httpAuth.resendEmailVerification(email);
+    return isSended;
   }
 
   Future<String> signIn(String email, String password) async {
