@@ -3,6 +3,7 @@ import 'package:greenapp/pages/market_tab.dart';
 import 'package:greenapp/pages/profile_tab.dart';
 import 'package:greenapp/pages/tasks_tab.dart';
 import 'package:greenapp/services/base_auth.dart';
+import 'package:greenapp/services/task_provider.dart';
 
 import 'map_tab.dart';
 
@@ -54,7 +55,9 @@ class _HomePageState extends State<HomePage> {
           case 1:
             returnValue = CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: MapTab(),
+                child: MapTab(
+                  baseTaskProvider: TaskProvider(widget.auth),
+                ),
               );
             });
             break;

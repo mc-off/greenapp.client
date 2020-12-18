@@ -1,16 +1,12 @@
-import 'package:greenapp/models/user.dart';
+import 'package:greenapp/models/task.dart';
+import 'package:greenapp/services/base_auth.dart';
 
-abstract class BaseAuth {
-  Future<String> signIn(String email, String password);
+abstract class BaseTaskProvider {
+  Future<List<Task>> getTasks();
 
-  Future<bool> signUp(String email, String password, String firstName,
-      String lastName, String birthDate);
+  Future<Task> getTask(int id);
 
-  Future<User> getCurrentUser();
+  Future<bool> updateTask();
 
-  Future<String> sendEmailVerification(String email, String code);
-
-  Future<void> signOut();
-
-//Future<bool> isEmailVerified();
+  Future<bool> createTask();
 }
