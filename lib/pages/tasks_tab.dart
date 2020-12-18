@@ -10,43 +10,44 @@ import 'package:http/http.dart' as http;
 
 import 'package:greenapp/models/app_state_model.dart';
 
-class TasksTab extends StatelessWidget {
+class TasksTab extends StatefulWidget {
+  @override
+  _TasksTabState createState() => _TasksTabState();
+}
+
+class _TasksTabState extends State<TasksTab> {
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[
-        CupertinoSliverNavigationBar(
-          largeTitle: Text('Tasks'),
-        ),
-        FutureBuilder(
-          future: _getTasks(),
-          builder: (context, projectSnap) {
-            var childCount = 0;
-            if (projectSnap.connectionState != ConnectionState.done ||
-                projectSnap.hasData == null)
-              childCount = 1;
-            else
-              childCount = projectSnap.data.length;
-            return SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                if (projectSnap.connectionState != ConnectionState.done) {
-                  //todo handle state
-                  return CupertinoActivityIndicator(); //todo set progress bar
-                }
-                if (projectSnap.hasData == null) {
-                  return Container();
-                }
-                return TaskRowItem(
-                  index: index,
-                  task: projectSnap.data[index],
-                  lastItem: index == projectSnap.data.length - 1,
-                );
-              }, childCount: childCount),
-            );
-          },
-        ),
-      ],
-    );
+    return NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            CupertinoSliverNavigationBar(
+              largeTitle: Text('Tasks'),
+            ),
+          ];
+        },
+        body: FutureBuilder(
+            future: _getTasks(),
+            builder: (context, projectSnap) {
+              if (projectSnap.data == null) {
+                return _showCircularProgress();
+              } else
+                return MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    removeBottom: false,
+                    child: ListView.builder(
+                      itemCount: projectSnap.data.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return TaskRowItem(
+                            index: index, task: projectSnap.data[index]);
+                      },
+                    ));
+            }));
+  }
+
+  Widget _showCircularProgress() {
+    return Center(child: CupertinoActivityIndicator());
   }
 
   Future<Map> getWeather(String key, double lat, double lon) async {
