@@ -9,7 +9,6 @@ import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
-
 final int INITIAL_ID_FOR_TASKS = 0;
 
 class TasksTab extends StatefulWidget {

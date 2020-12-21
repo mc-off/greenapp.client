@@ -21,7 +21,7 @@ class HttpTaskProvider {
       },
       body: json.encode({
         'status': EnumToString.parse(TaskStatus.CREATED),
-        "limit": 20,
+        "limit": 10,
         "offset": id
       }),
     );
