@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/text-styles.dart';
-import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/validate_email_page.dart';
 
 import 'package:greenapp/services/base_auth.dart';
@@ -47,7 +46,6 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   bool _isLoginForm;
   bool _isLoading;
-  bool _isValidated;
 
   // Check if form is valid before perform login or signup
   bool validateAndSave() {
