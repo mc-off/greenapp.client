@@ -11,7 +11,7 @@ import GoogleMaps
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
-    GMSServices.provideAPIKey("AIzaSyClkF4C3krEVVrewtB-OuB4NGpqpHyC7vw")
+    GMSServices.provideAPIKey("API-IS-NOT-ALLOWED")
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
