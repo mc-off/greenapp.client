@@ -28,8 +28,8 @@ class _TasksTabState extends State<TasksTab> {
   TaskStatus segmentValue = TaskStatus.CREATED;
 
   final Map<int, Widget> logoWidgets = const <int, Widget>{
-    0: Text("Head1"),
-    1: Text("Head2"),
+    0: Text("Available"),
+    1: Text("Assigned"),
   };
 
   @override
@@ -82,34 +82,36 @@ class _TasksTabState extends State<TasksTab> {
           ];
         },
         body: FutureBuilder(
-            future: (segmentValue == TaskStatus.CREATED)
-                ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
-                : widget.baseTaskProvider
-                    .getTasksForUser(INITIAL_ID_FOR_TASKS, 1),
-            builder: (context, projectSnapshot) {
-              debugPrint(EnumToString.parse(projectSnapshot.connectionState));
-              if (projectSnapshot.hasError)
-                return PlaceHolderContent(
-                  title: "Problem Occurred",
-                  message: "Internet not connect try again",
-                  tryAgainButton: _tryAgainButtonClick,
-                );
-              switch (projectSnapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return _showCircularProgress();
-                case ConnectionState.done:
-                  return TaskList(
-                    baseTaskProvider: widget.baseTaskProvider,
-                    taskList: projectSnapshot.data,
-                    taskStatus: segmentValue,
-                  );
-                default:
-                  return _showCircularProgress();
-              }
+                        future: (segmentValue == TaskStatus.CREATED)
+                            ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
+                            : widget.baseTaskProvider
+                            .getTasksForUser(INITIAL_ID_FOR_TASKS, 1),
+                        builder: (context, projectSnapshot) {
+                          debugPrint(EnumToString.parse(projectSnapshot.connectionState));
+                          if (projectSnapshot.hasError)
+                            return PlaceHolderContent(
+                              title: "Problem Occurred",
+                              message: "Internet not connect try again",
+                              tryAgainButton: _tryAgainButtonClick,
+                            );
+                          switch (projectSnapshot.connectionState) {
+                            case ConnectionState.waiting:
+                              return _showCircularProgress();
+                            case ConnectionState.done:
+                              return TaskList(
+                                baseTaskProvider: widget.baseTaskProvider,
+                                taskList: projectSnapshot.data,
+                                taskStatus: segmentValue,
+                              );
+                            default:
+                              return _showCircularProgress();
+                          }
             }));
   }
 
-  _tryAgainButtonClick(bool _) => setState(() {});
+  _tryAgainButtonClick(bool _) => setState(() {
+    _showCircularProgress();
+  });
 
   Widget _showCircularProgress() {
     return Center(child: CupertinoActivityIndicator());

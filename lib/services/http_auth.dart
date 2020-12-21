@@ -42,7 +42,7 @@ class HttpAuth {
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
       // then parse the JSON.
-      print(response.toString());
+      print(response.body.toString());
       User user = User.fromJson(json.decode(response.body));
       updateCacheAndUser(user);
       return user;

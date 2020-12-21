@@ -50,9 +50,25 @@ class _RootPageState extends State<RootPage> {
 
   void logoutCallback() {
     setState(() {
+      widget.auth.signOut();
       authStatus = AuthStatus.NOT_LOGGED_IN;
       _userId = "";
+      displayDialog();
     });
+  }
+
+  void displayDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => new CupertinoAlertDialog(
+        title: new Text("Info"),
+        content: new Text("Your session is over\nPlease, re-login"),
+        actions: [
+          CupertinoDialogAction(
+              isDefaultAction: false, child: new Text("Close"))
+        ],
+      ),
+    );
   }
 
   Widget buildWaitingScreen() {
@@ -77,7 +93,7 @@ class _RootPageState extends State<RootPage> {
         );
         break;
       case AuthStatus.LOGGED_IN:
-        if (_userId.length > 0 && _userId != null) {
+        if (_userId != null) {
           return new HomePage(
             userId: _userId,
             auth: widget.auth,
