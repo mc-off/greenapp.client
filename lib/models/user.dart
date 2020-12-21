@@ -8,4 +8,9 @@ class User {
       token: json['jwttoken'],
     );
   }
+
+  @override
+  String toString() {
+    return token;
+  }
 }

@@ -4,21 +4,30 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/pages/task_row_item.dart';
-import 'package:provider/provider.dart';
+import 'package:greenapp/pages/task_list.dart';
+import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:greenapp/models/app_state_model.dart';
+
+final int INITIAL_ID_FOR_TASKS = 0;
 
 class TasksTab extends StatefulWidget {
+  TasksTab({this.baseTaskProvider});
+
+  @required
+  final BaseTaskProvider baseTaskProvider;
+
   @override
-  _TasksTabState createState() => _TasksTabState();
+  _TasksTabState createState() {
+    return _TasksTabState();
+  }
 }
 
 class _TasksTabState extends State<TasksTab> {
   @override
   Widget build(BuildContext context) {
-    return NestedScrollView(
+    return new NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[
             CupertinoSliverNavigationBar(
@@ -27,68 +36,48 @@ class _TasksTabState extends State<TasksTab> {
           ];
         },
         body: FutureBuilder(
-            future: _getTasks(),
-            builder: (context, projectSnap) {
-              if (projectSnap.data == null) {
-                return _showCircularProgress();
-              } else
-                return MediaQuery.removePadding(
-                    context: context,
-                    removeTop: true,
-                    removeBottom: false,
-                    child: ListView.builder(
-                      itemCount: projectSnap.data.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return TaskRowItem(
-                            index: index, task: projectSnap.data[index]);
-                      },
-                    ));
+            future: widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS),
+            builder: (context, projectSnapshot) {
+              debugPrint(EnumToString.parse(projectSnapshot.connectionState));
+              if (projectSnapshot.hasError)
+                return PlaceHolderContent(
+                  title: "Problem Occurred",
+                  message: "Internet not connect try again",
+                  tryAgainButton: _tryAgainButtonClick,
+                );
+              switch (projectSnapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return _showCircularProgress();
+                case ConnectionState.done:
+                  return TaskList(
+                    baseTaskProvider: widget.baseTaskProvider,
+                    taskList: projectSnapshot.data,
+                  );
+                default:
+                  return _showCircularProgress();
+              }
             }));
   }
+
+  _tryAgainButtonClick(bool _) => setState(() {});
 
   Widget _showCircularProgress() {
     return Center(child: CupertinoActivityIndicator());
   }
 
-  Future<Map> getWeather(String key, double lat, double lon) async {
-    String apiUrl =
-        'https://api.darksky.net/forecast/$key/$lat,$lon?lang=sk&units=si';
-    http.Response response = await http.get(apiUrl);
-    debugPrint(response.body.toString());
-    return json.decode(response.body);
-  }
-
-  Future<List<User>> _getUsers() async {
-    var data = await http
-        .get("http://www.json-generator.com/api/json/get/cfwZmvEBbC?indent=2");
-
-    var jsonData = json.decode(data.body);
-
-    List<User> users = [];
-
-    for (var u in jsonData) {
-      User user =
-          User(u["index"], u["about"], u["name"], u["email"], u["picture"]);
-
-      users.add(user);
-    }
-
-    print(users.length);
-
-    return users;
-  }
-
-  Future<List<Task>> _getTasks() async {
-    var uri = Uri.https(
-        'greenapp-task-provider.herokuapp.com', '/task-provider/tasks');
+  Future<List<Task>> getTasksList() async {
+    debugPrint("getTasksList");
     http.Response response = await http.post(
-      "https://greenapp-task-provider.herokuapp.com/task-provider/tasks",
+      "https://greenapp-gateway.herokuapp.com/task-provider/tasks",
       headers: <String, String>{
+        'Authorization':
+            "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzemIwOTkyM0BjdW9seS5jb20iLCJleHAiOjE1OTI3NjQ0MjIsImlhdCI6MTU5Mjc0NjQyMn0.ouTIaGc6hLPE4aKa-TCj_LW2ovkHQ-kCfWhgdiaz9Q9ED14m5uwPH0vczZ82HO9fMcEieZ1va4ZWrs8wJdFhMw",
         'Content-type': 'application/json',
-        'X-GREEN-APP-ID': 'GREEN',
       },
       body: json.encode({
         'status': EnumToString.parse(TaskStatus.CREATED),
+        "limit": 10,
+        "offset": 0
       }),
     );
     if (response.statusCode == 200) {
@@ -111,28 +100,4 @@ class _TasksTabState extends State<TasksTab> {
       throw Exception('Failed to parse tasks');
     }
   }
-}
-
-class DetailPage extends StatelessWidget {
-  final Task task;
-
-  DetailPage(this.task);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-      title: Text(task.title),
-    ));
-  }
-}
-
-class User {
-  final int index;
-  final String about;
-  final String name;
-  final String email;
-  final String picture;
-
-  User(this.index, this.about, this.name, this.email, this.picture);
 }

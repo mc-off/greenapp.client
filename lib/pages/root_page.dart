@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/pages/home_page.dart';
 import 'package:greenapp/pages/login_singup_page.dart';

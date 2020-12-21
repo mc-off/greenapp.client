@@ -5,9 +5,12 @@ import 'package:greenapp/models/task.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/converters.dart';
 
+final int INITIAL_ID_FOR_TASKS = 0;
+
 class MapTab extends StatefulWidget {
   MapTab({this.baseTaskProvider});
 
+  @required
   final BaseTaskProvider baseTaskProvider;
 
   @override
@@ -30,7 +33,7 @@ class _MapTabState extends State<MapTab> {
         zoomControlsEnabled: true,
         initialCameraPosition: CameraPosition(
           target: const LatLng(60, 50),
-          zoom: 2,
+          zoom: 1,
         ),
         markers: _markers.values.toSet(),
       ),
@@ -54,7 +57,8 @@ class _MapTabState extends State<MapTab> {
   Map<String, Marker> _markers = {};
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    final taskList = await widget.baseTaskProvider.getTasks();
+    final taskList =
+        await widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS);
     _markers.clear();
     for (final task in taskList) {
       //final coordinates = LatLng(Random.secure().nextDouble(), Random.secure().nextDouble());

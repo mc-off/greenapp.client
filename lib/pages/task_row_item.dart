@@ -27,15 +27,7 @@ class TaskRowItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final row = SafeArea(
-      top: false,
-      bottom: false,
-      minimum: const EdgeInsets.only(
-        left: 16,
-        top: 8,
-        bottom: 8,
-        right: 8,
-      ),
+    final row = Container(
       child: Row(
         children: <Widget>[
           ClipRRect(

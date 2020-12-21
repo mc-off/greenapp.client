@@ -44,19 +44,21 @@ class _HomePageState extends State<HomePage> {
       ),
       tabBuilder: (context, index) {
         CupertinoTabView returnValue;
+        TaskProvider _taskProvider = TaskProvider(widget.auth);
         switch (index) {
           case 0:
             returnValue = CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: TasksTab(),
-              );
+                  child: TasksTab(
+                baseTaskProvider: _taskProvider,
+              ));
             });
             break;
           case 1:
             returnValue = CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: MapTab(
-                  baseTaskProvider: TaskProvider(widget.auth),
+                  baseTaskProvider: _taskProvider,
                 ),
               );
             });

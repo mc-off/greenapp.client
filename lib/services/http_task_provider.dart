@@ -1,32 +1,28 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
-import 'dart:math';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
 
-import 'package:greenapp/models/user.dart';
 import 'package:http/http.dart' as http;
 
 class HttpTaskProvider {
-  final String bearerAuth;
+  final String _bearerAuth;
 
-  HttpTaskProvider(this.bearerAuth);
+  HttpTaskProvider(this._bearerAuth);
 
-  Future<List<Task>> getTasksList() async {
+  Future<List<Task>> getTasksList(int id) async {
     debugPrint("getTasksList");
-    debugPrint(bearerAuth);
+    debugPrint(_bearerAuth);
     http.Response response = await http.post(
       "https://greenapp-gateway.herokuapp.com/task-provider/tasks",
       headers: <String, String>{
-        'Authorization': bearerAuth,
+        'Authorization': _bearerAuth,
         'Content-type': 'application/json',
       },
       body: json.encode({
         'status': EnumToString.parse(TaskStatus.CREATED),
+        "limit": 20,
+        "offset": id
       }),
     );
     if (response.statusCode == 200) {
