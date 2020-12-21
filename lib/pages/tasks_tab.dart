@@ -24,6 +24,14 @@ class TasksTab extends StatefulWidget {
 }
 
 class _TasksTabState extends State<TasksTab> {
+  int theriGroupVakue = 0;
+  TaskStatus segmentValue = TaskStatus.CREATED;
+
+  final Map<int, Widget> logoWidgets = const <int, Widget>{
+    0: Text("Head1"),
+    1: Text("Head2"),
+  };
+
   @override
   Widget build(BuildContext context) {
     return new NestedScrollView(
@@ -32,10 +40,52 @@ class _TasksTabState extends State<TasksTab> {
             CupertinoSliverNavigationBar(
               largeTitle: Text('Tasks'),
             ),
+            SliverPersistentHeader(
+              delegate: _SliverAppBarDelegate(Container(
+                  height: 50,
+                  color: CupertinoColors.systemBackground,
+                  child: Center(
+                      child: Row(
+                    children: <Widget>[
+                      SizedBox(
+                        width: 15.0,
+                      ),
+                      Expanded(
+                        child: CupertinoSegmentedControl(
+                          groupValue: theriGroupVakue,
+                          onValueChanged: (int changeFromGroupValue) {
+                            setState(() {
+                              theriGroupVakue = changeFromGroupValue;
+                              switch (changeFromGroupValue) {
+                                case 0:
+                                  segmentValue = TaskStatus.CREATED;
+                                  break;
+                                case 1:
+                                  segmentValue = TaskStatus.IN_PROGRESS;
+                                  break;
+                                default:
+                                  segmentValue = TaskStatus.CREATED;
+                                  break;
+                              }
+                            });
+                          },
+                          children: logoWidgets,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 15.0,
+                      ),
+                    ],
+                  )))),
+              pinned: true,
+            ),
           ];
         },
         body: FutureBuilder(
-            future: widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS),
+            future: (segmentValue == TaskStatus.CREATED)
+                ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
+                : widget.baseTaskProvider
+                    .getTasksForUser(INITIAL_ID_FOR_TASKS, 1),
             builder: (context, projectSnapshot) {
               debugPrint(EnumToString.parse(projectSnapshot.connectionState));
               if (projectSnapshot.hasError)
@@ -51,6 +101,7 @@ class _TasksTabState extends State<TasksTab> {
                   return TaskList(
                     baseTaskProvider: widget.baseTaskProvider,
                     taskList: projectSnapshot.data,
+                    taskStatus: segmentValue,
                   );
                 default:
                   return _showCircularProgress();
@@ -98,5 +149,29 @@ class _TasksTabState extends State<TasksTab> {
       debugPrint(response.body.toString());
       throw Exception('Failed to parse tasks');
     }
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar);
+
+  final Container _tabBar;
+
+  @override
+  double get minExtent => _tabBar.constraints.constrainHeight();
+  @override
+  double get maxExtent => _tabBar.constraints.constrainHeight();
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return new Container(
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return true;
   }
 }
