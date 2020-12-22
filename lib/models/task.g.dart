@@ -24,7 +24,7 @@ Task _$TaskFromJson(Map<String, dynamic> json) {
     dueDate: json['dueDate'] as String,
     createdBy: json['createdBy'] as int,
     created: json['created'] as String,
-  );
+  )..address = json['address'] as String;
 }
 
 Map<String, dynamic> _$TaskToJson(Task instance) {
@@ -49,6 +49,7 @@ Map<String, dynamic> _$TaskToJson(Task instance) {
   writeNotNull('dueDate', instance.dueDate);
   writeNotNull('createdBy', instance.createdBy);
   writeNotNull('created', instance.created);
+  writeNotNull('address', instance.address);
   return val;
 }
 

@@ -76,11 +76,12 @@ class _HomePageState extends State<HomePage> {
           case 3:
             returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: ProfileTab(
-                    userId: widget.userId,
-                    auth: widget.auth,
-                    logoutCallback: widget.logoutCallback),
-              );
+                  child: ProfileTab(
+                userId: widget.userId,
+                auth: widget.auth,
+                logoutCallback: widget.logoutCallback,
+                baseTaskProvider: _taskProvider,
+              ));
             });
             break;
         }

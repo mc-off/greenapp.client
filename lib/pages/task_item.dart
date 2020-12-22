@@ -329,7 +329,8 @@ class _TaskItemPageState extends State<TaskItemPage> {
               },
             ),
           ));
-    } else
+    } else if (widget.task.status == TaskStatus.WAITING_FOR_APPROVE ||
+        widget.task.status == TaskStatus.RESOLVED)
       return Padding(
           padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
           child: SizedBox(
@@ -369,6 +370,8 @@ class _TaskItemPageState extends State<TaskItemPage> {
                   ),
                 ],
               ))));
+    else
+      return Container();
   }
 
   String getButtonName() {
@@ -446,14 +449,6 @@ class _TaskItemPageState extends State<TaskItemPage> {
         images.add("Add Image");
       });
     });
-  }
-
-  void testRequest() async {
-    final bool isSuccess =
-        await widget.baseTaskProvider.updateTask(widget.task);
-    if (isSuccess) {
-      setState(() {});
-    }
   }
 
   void testUpdateTaskAttach(List<Object> files) async {

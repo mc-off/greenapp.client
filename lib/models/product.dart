@@ -1,34 +1,49 @@
 import 'package:flutter/foundation.dart';
+import 'package:json_annotation/json_annotation.dart';
+part 'product.g.dart';
 
-enum Category {
-  all,
-  accessories,
-  clothing,
-  home,
+enum ProductStatus { SOLD, AVAILABLE }
+
+@JsonSerializable(includeIfNull: false)
+class Product {
+  int amount;
+  int createdBy;
+  int createdWhen;
+  String description;
+  String headerPhoto;
+  int id;
+  int lastUpdated;
+  int price;
+  ProductStatus status;
+  String title;
+
+  Product(
+      {this.amount,
+      this.createdBy,
+      this.createdWhen,
+      this.description,
+      this.headerPhoto,
+      this.id,
+      this.lastUpdated,
+      this.price,
+      this.status,
+      this.title});
+
+  factory Product.fromJson(Map<String, dynamic> json) =>
+      _$ProductFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ProductToJson(this);
 }
 
-class Product {
-  const Product({
-    @required this.category,
-    @required this.id,
-    @required this.isFeatured,
-    @required this.name,
-    @required this.price,
-  })  : assert(category != null),
-        assert(id != null),
-        assert(isFeatured != null),
-        assert(name != null),
-        assert(price != null);
-
-  final Category category;
-  final int id;
-  final bool isFeatured;
-  final String name;
-  final int price;
-
-  String get assetName => '$id-0.jpg';
-  String get assetPackage => 'shrine_images';
-
-  @override
-  String toString() => '$name (id=$id)';
+class ProductDateTime {
+  int date;
+  int day;
+  int hours;
+  int minutes;
+  int month;
+  int nanos;
+  int seconds;
+  int time;
+  int timezoneOffset;
+  int year;
 }

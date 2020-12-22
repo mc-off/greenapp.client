@@ -3,10 +3,11 @@ import 'dart:io';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/models/text-styles.dart';
 import 'package:greenapp/models/user.dart';
+import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
@@ -216,8 +217,15 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   }
 
   void closePageAndOpenNewTask() {
-    Navigator.pop(context);
-    widget.createCallback(task);
+    Navigator.push(
+        context,
+        CupertinoPageRoute(
+            builder: (context) => TaskItem(
+                  baseTaskProvider: widget.baseTaskProvider,
+                  task: task,
+                ))).then((value) {
+      Navigator.pop(context);
+    });
   }
 
   @override
@@ -403,7 +411,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       children: List.generate(images.length, (index) {
         if (images[index] is File) {
           File imageFile = images[index];
-          return Card(
+          return material.Card(
             clipBehavior: Clip.antiAlias,
             child: Stack(
               children: <Widget>[
@@ -415,11 +423,11 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 Positioned(
                   right: 5,
                   top: 5,
-                  child: InkWell(
+                  child: material.InkWell(
                     child: Icon(
-                      Icons.remove_circle,
+                      material.Icons.remove_circle,
                       size: 20,
-                      color: Colors.red,
+                      color: material.Colors.red,
                     ),
                     onTap: () {
                       setState(() {
@@ -433,9 +441,9 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
             ),
           );
         } else {
-          return Card(
-            child: IconButton(
-              icon: Icon(Icons.add),
+          return material.Card(
+            child: material.IconButton(
+              icon: Icon(material.Icons.add),
               onPressed: () {
                 _onAddImageClick(index);
               },
@@ -481,18 +489,25 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                 child: new Text(EnumToString.parse(TaskType.values[index])),
               );
             }))
-        : DropdownButton<String>(
-            items: List<String>.generate(TaskStatus.values.length,
-                    (index) => EnumToString.parse(TaskStatus.values[index]))
-                .map((String value) {
-              return new DropdownMenuItem<String>(
-                value: value,
-                child: new Text(value),
-              );
-            }).toList(),
-            onChanged: (value) {
-              debugPrint("New type is ${EnumToString.parse(value)}");
-              _taskType = EnumToString.fromString(TaskType.values, value);
-            });
+        : material.Card(
+            child: material.DropdownButton<String>(
+                value: EnumToString.parse(_taskType),
+                items: List<String>.generate(TaskType.values.length,
+                        (index) => EnumToString.parse(TaskType.values[index]))
+                    .map((String value) {
+                  return new material.DropdownMenuItem<String>(
+                    value: value,
+                    child: new Text(value),
+                  );
+                }).toList(),
+                onChanged: (String value) {
+                  debugPrint("New type is");
+                  debugPrint(value);
+                  //debugPrint("New type is ${EnumToString.parse(value)}");
+                  setState(() {
+                    this._taskType =
+                        EnumToString.fromString(TaskType.values, value);
+                  });
+                }));
   }
 }
