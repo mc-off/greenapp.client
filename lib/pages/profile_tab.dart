@@ -25,44 +25,8 @@ class _ProfileTabState extends State<ProfileTab> {
       SliverList(
         delegate: SliverChildListDelegate(
           [
-            const CSHeader('Brightness'),
-            CSWidget(
-                CupertinoSlider(
-                  value: 0.5,
-                  onChanged: (double value) {},
-                ),
-                style: brightnessStyle),
-            CSControl(
-              nameWidget: Text('Auto brightness'),
-              contentWidget: CupertinoSwitch(
-                value: true,
-                onChanged: (bool value) {},
-              ),
-              style: brightnessStyle,
-            ),
-            CSHeader('Selection'),
-            CSSelection<int>(
-              items: const <CSSelectionItem<int>>[
-                CSSelectionItem<int>(text: 'Day mode', value: 0),
-                CSSelectionItem<int>(text: 'Night mode', value: 1),
-              ],
-              onSelected: (index) {
-                print(index);
-              },
-              currentSelection: 0,
-            ),
-            CSDescription(
-              'Using Night mode extends battery life on devices with OLED display',
-            ),
-            const CSHeader(''),
-            CSControl(
-              nameWidget: Text('Loading...'),
-              contentWidget: CupertinoActivityIndicator(),
-            ),
-            CSButton(CSButtonType.DEFAULT, "Licenses", () {
-              print("It works!");
-            }),
-            const CSHeader(''),
+            Row(children: <Widget>[ClipOval()]),
+            const CSHeader('Session'),
             CSButton(CSButtonType.DESTRUCTIVE, "Sign out", () {
               signOut();
             })

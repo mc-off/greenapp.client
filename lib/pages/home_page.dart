@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
         switch (index) {
           case 0:
             returnValue = CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
+              return new CupertinoPageScaffold(
                   child: TasksTab(
                 baseTaskProvider: _taskProvider,
               ));
@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage> {
             break;
           case 1:
             returnValue = CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
+              return new CupertinoPageScaffold(
                 child: MapTab(
                   baseTaskProvider: _taskProvider,
                 ),
@@ -65,7 +65,7 @@ class _HomePageState extends State<HomePage> {
             });
             break;
           case 2:
-            returnValue = CupertinoTabView(builder: (context) {
+            returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: MarketTab(
                   baseAuth: widget.auth,
@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
             });
             break;
           case 3:
-            returnValue = CupertinoTabView(builder: (context) {
+            returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: ProfileTab(
                     userId: widget.userId,

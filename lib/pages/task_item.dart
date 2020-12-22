@@ -30,8 +30,10 @@ class TaskItem extends StatefulWidget {
   const TaskItem({
     this.baseTaskProvider,
     this.task,
+    this.updateCallback,
   });
   final BaseTaskProvider baseTaskProvider;
+  final VoidCallback updateCallback;
   final Task task;
 
   @override
@@ -60,6 +62,10 @@ class _TaskItemState extends State<TaskItem> {
     return true;
   }
 
+  void update() {
+    setState(() {});
+  }
+
   final buttonWidget = <Widget>[
     CupertinoButton(
       padding: EdgeInsets.zero,
@@ -82,6 +88,11 @@ class _TaskItemState extends State<TaskItem> {
                 (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
                 CupertinoSliverNavigationBar(
+                  leading: CupertinoNavigationBarBackButton(
+                    onPressed: () {
+                      close();
+                    },
+                  ),
                   largeTitle: Text('Task'),
                   trailing: (widget.task.status == TaskStatus.IN_PROGRESS)
                       ? buttonWidget[0]
@@ -98,11 +109,21 @@ class _TaskItemState extends State<TaskItem> {
                     case ConnectionState.waiting:
                       return _showCircularProgress();
                     case ConnectionState.done:
-                      return TaskItemPage(
-                        task: widget.task,
-                        baseTaskProvider: widget.baseTaskProvider,
-                        isEditable: isEditable,
-                      );
+                      {
+                        debugPrint(projectSnapshot.data.assignee.toString());
+                        debugPrint(
+                            widget.baseTaskProvider.getUserId().toString());
+
+                        isEditable = (projectSnapshot.data.assignee != null &&
+                            projectSnapshot.data.assignee ==
+                                widget.baseTaskProvider.getUserId());
+                        return TaskItemPage(
+                          task: projectSnapshot.data,
+                          baseTaskProvider: widget.baseTaskProvider,
+                          isEditable: isEditable,
+                          callback: displayDialog,
+                        );
+                      }
                     default:
                       return _showCircularProgress();
                   }
@@ -112,6 +133,11 @@ class _TaskItemState extends State<TaskItem> {
   _tryAgainButtonClick(bool _) => setState(() {
         _showCircularProgress();
       });
+
+  void close() {
+    Navigator.pop(context);
+    widget.updateCallback();
+  }
 
   Widget _showCircularProgress() {
     return Center(child: CupertinoActivityIndicator());
@@ -129,6 +155,7 @@ class _TaskItemState extends State<TaskItem> {
               child: new Text("Close"),
               onPressed: () {
                 Navigator.pop(context, "Close");
+                setState(() {});
               })
         ],
       ),
@@ -140,9 +167,14 @@ class TaskItemPage extends StatefulWidget {
   final Task task;
   final BaseTaskProvider baseTaskProvider;
   final bool isEditable;
+  final VoidCallback callback;
 
   const TaskItemPage(
-      {Key key, this.task, this.baseTaskProvider, this.isEditable})
+      {Key key,
+      this.task,
+      this.baseTaskProvider,
+      this.isEditable,
+      this.callback})
       : super(key: key);
 
   @override
@@ -191,8 +223,8 @@ class _TaskItemPageState extends State<TaskItemPage> {
                     _showAssignee(),
                     _showDescription(),
                     _shoButton(),
-                    if (widget.task.attachmentIds != null) _showGaleryHint(),
-                    _showGallery(),
+                    if (_isAttachExists()) _showGaleryHint(),
+                    if (_isAttachExists()) _showGallery(),
                     if (widget.isEditable) _showAttachHint(),
                     if (widget.isEditable) _buildGridView()
                   ],
@@ -205,7 +237,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
     return Padding(
       padding: EdgeInsets.only(left: 20, top: 8),
       child: Text(
-        '${widget.task.title}' + ' ID:' + '${widget.task.id}}',
+        '${widget.task.title}' + ' ID:' + '${widget.task.id}',
         style: Styles.body17Medium(),
       ),
     );
@@ -215,7 +247,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
     return Padding(
       padding: EdgeInsets.only(top: 3, left: 20),
       child: Text(
-        '${widget.task.coordinate}',
+        '${widget.task.address}',
         style: Styles.body15Regular(),
       ),
     );
@@ -237,7 +269,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
     return (widget.task.assignee != null)
         ? Padding(
             padding: EdgeInsets.only(top: 3, left: 20),
-            child: Text('${widget.task.description}',
+            child: Text('${widget.task.assignee}',
                 style: Styles.body15RegularGray()),
           )
         : Container();
@@ -265,20 +297,22 @@ class _TaskItemPageState extends State<TaskItemPage> {
     );
   }
 
+  bool _isAttachExists() {
+    return (widget.task.attachmentIds != null &&
+        widget.task.attachmentIds.length != 0);
+  }
+
   Widget _showGallery() {
-    return (widget.task.attachmentIds != null)
-        ? Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-            child: GalleryExample(
-              baseTaskProvider: widget.baseTaskProvider,
-              attachArray: widget.task.attachmentIds,
-            ))
-        : Container();
+    return Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+        child: GalleryExample(
+          baseTaskProvider: widget.baseTaskProvider,
+          attachArray: widget.task.attachmentIds,
+        ));
   }
 
   Widget _shoButton() {
-    if (widget.task.status == TaskStatus.CREATED ||
-        widget.task.status == TaskStatus.IN_PROGRESS) {
+    if (widget.task.status == TaskStatus.CREATED) {
       return Padding(
           padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
           child: SizedBox(
@@ -296,14 +330,52 @@ class _TaskItemPageState extends State<TaskItemPage> {
             ),
           ));
     } else
-      return Container();
+      return Padding(
+          padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
+          child: SizedBox(
+              height: 50.0,
+              child: Center(
+                  child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () async {
+                      final t = await widget.baseTaskProvider
+                          .voteForTask(widget.task, VoteChoice.REJECT);
+                      if (t) {
+                        widget.callback();
+                      }
+                    },
+                    child: const Icon(
+                      Icons.favorite_border,
+                      semanticLabel: 'VoteNo',
+                    ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () async {
+                      final t = await widget.baseTaskProvider
+                          .voteForTask(widget.task, VoteChoice.APPROVE);
+                      if (t) {
+                        widget.callback();
+                      }
+                    },
+                    child: const Icon(
+                      Icons.favorite,
+                      semanticLabel: 'VoteYes',
+                    ),
+                  ),
+                ],
+              ))));
   }
 
   String getButtonName() {
-    switch (widget.task.status) {
-      case TaskStatus.CREATED:
+    switch (widget.isEditable) {
+      case false:
         return "Get task for ${widget.task.reward} credits";
-      case TaskStatus.IN_PROGRESS:
+      case true:
         return "Approve task";
     }
   }
@@ -368,7 +440,6 @@ class _TaskItemPageState extends State<TaskItemPage> {
 
   void getFileImage(int index) async {
 //    var dir = await path_provider.getTemporaryDirectory();
-
     _imageFile.then((file) async {
       setState(() {
         images.replaceRange(index, index + 1, [file]);
@@ -386,10 +457,11 @@ class _TaskItemPageState extends State<TaskItemPage> {
   }
 
   void testUpdateTaskAttach(List<Object> files) async {
+    debugPrint("Perform update");
     final bool isSuccess = await widget.baseTaskProvider
         .updateTaskWithAttachments(files, widget.task);
     if (isSuccess) {
-      setState(() {});
+      widget.callback();
     }
   }
 }

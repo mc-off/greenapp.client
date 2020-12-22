@@ -9,6 +9,8 @@ import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/services/http_task_provider.dart';
 
 class TaskProvider implements BaseTaskProvider {
+  String _auth;
+  User _user;
   BaseAuth _baseAuth;
   HttpTaskProvider _httpTaskProvider;
   VoidCallback logoutCallback;
@@ -28,6 +30,7 @@ class TaskProvider implements BaseTaskProvider {
       List<Object> objects, Task task, UserType userType) async {
     final user = await _baseAuth.getCurrentUser();
     task.createdBy = user.clientId;
+    task.assignee = user.clientId;
     debugPrint("Set user id: " + user.clientId.toString());
     return _httpTaskProvider.createTask(objects, task);
   }
@@ -45,6 +48,7 @@ class TaskProvider implements BaseTaskProvider {
   @override
   Future<List<Task>> getTasksForUser(int lastTaskId, UserType userType) async {
     final user = await _baseAuth.getCurrentUser();
+    this._user = user;
     debugPrint("Set user id: " + user.clientId.toString());
     return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, user.clientId);
   }
@@ -67,6 +71,8 @@ class TaskProvider implements BaseTaskProvider {
   Future<String> _getAuthToken() async {
     final user = await _baseAuth.getCurrentUser();
     debugPrint("User is: " + user.toString());
+    this._auth = 'Bearer ' + user.token.toString();
+    this._user = user;
     return 'Bearer ' + user.token.toString();
   }
 
@@ -76,7 +82,7 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<Uint8List> getAttachment(int attachId) {
+  Future<NetworkImage> getAttachment(int attachId) {
     return _httpTaskProvider.getAttachment(attachId);
   }
 
@@ -84,5 +90,17 @@ class TaskProvider implements BaseTaskProvider {
   Future<bool> updateTaskWithAttachments(
       List<Object> objects, Task task) async {
     return _httpTaskProvider.updateTaskWithAttachments(objects, task);
+  }
+
+  Future<bool> voteForTask(Task task, VoteChoice voteChoice) {
+    return _httpTaskProvider.voteForTask(task, voteChoice, _user.clientId);
+  }
+
+  String getAuth() {
+    return _auth;
+  }
+
+  int getUserId() {
+    return _user.clientId;
   }
 }

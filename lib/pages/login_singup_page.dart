@@ -83,9 +83,9 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               _password.value.text,
               _firstName.value.text,
               _secondName.value.text,
-              _birthDate.value.text);
+              "2011-11-11");
           if (isCodeSended) {
-            debugPrint('Code sended to ${_email.value.text}');
+            debugPrint('Code se1315nded to ${_email.value.text}');
             _showValidationEmailPage(_email.value.text);
           }
           //widget.auth.sendEmailVerification();
@@ -152,7 +152,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                   showPasswordInput(),
                   showFirstNameInput(),
                   showSecondNameInput(),
-                  showBirthDateInput(),
+                  //showBirthDateInput(),
                   showPrimaryButton(),
                   showSecondaryButton(),
                   showErrorMessage(),
@@ -163,7 +163,11 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget _showCircularProgress() {
     if (_isLoading) {
-      return Center(child: CupertinoActivityIndicator());
+      return Opacity(
+          opacity: 0.3,
+          child: Container(
+              color: CupertinoColors.lightBackgroundGray,
+              child: Center(child: CupertinoActivityIndicator())));
     }
     return Container(
       height: 0.0,
@@ -235,7 +239,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget showPrimaryButton() {
     return new Padding(
-        padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 80.0 : 30.0, 0.0, 0.0),
+        padding: EdgeInsets.fromLTRB(0.0, _isLoginForm ? 80.0 : 70.0, 0.0, 0.0),
         child: SizedBox(
           height: 50.0,
           child: new CupertinoButton.filled(

@@ -117,7 +117,7 @@ class _MapTabState extends State<MapTab> {
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
     final taskList =
-        await widget.baseTaskProvider.getTasksNum(INITIAL_ID_FOR_TASKS, 200);
+        await widget.baseTaskProvider.getTasksNum(INITIAL_ID_FOR_TASKS, 300);
     _markers.clear();
     getCurrentLocation();
     for (final task in taskList) {
