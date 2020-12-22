@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:http_parser/src/media_type.dart';
+import 'package:image_jpeg/image_jpeg.dart';
+import 'package:path/path.dart';
+
+import 'package:google_map_location_picker/generated/i18n.dart'
+    as location_picker;
 
 import 'package:http/http.dart' as http;
 
@@ -25,6 +32,116 @@ class HttpTaskProvider {
 
   Future<List<Task>> getTasksAmount(int lastTaskId, int amount) async {
     return _getTaskList(lastTaskId, TaskStatus.CREATED, "", null, amount);
+  }
+
+  Future<int> createTask(List<Object> objects, Task task) async {
+    var uri =
+        Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task');
+
+    debugPrint('Create: ' + json.encode(task));
+
+    final dio.Dio dioClient = new dio.Dio();
+    dioClient.options.headers["Authorization"] = _bearerAuth;
+    //dioClient.options.contentType = "multipart/form-data";
+    debugPrint("Object amount: " + objects.length.toString());
+    List<File> fileList = new List<File>();
+    for (Object object in objects) {
+      if (object is File && object != null) {
+        fileList.add(object);
+      }
+    }
+    debugPrint("Object amount (files): " + fileList.length.toString());
+    var formData = dio.FormData();
+    formData.files.add(MapEntry(
+        'task',
+        new dio.MultipartFile.fromString(json.encode(task),
+            contentType: MediaType('application', 'json'))));
+    for (File file in fileList) {
+      final image = Image.file(file);
+      String newFileName =
+          await ImageJpeg.encodeJpeg(file.path, null, 70, 1600, 900);
+      formData.files.add(MapEntry(
+          "attachment",
+          await dio.MultipartFile.fromFile(newFileName,
+              filename: basename(file.path),
+              contentType: MediaType.parse("image/jpeg"))));
+    }
+
+    debugPrint(formData.files.length.toString());
+    if (formData.files.length > 1) {
+      debugPrint(formData.files.last.key);
+
+      debugPrint(formData.files.last.value.contentType.type);
+      debugPrint(formData.files.last.value.contentType.subtype);
+      debugPrint(formData.files.last.value.filename);
+      debugPrint(formData.files.last.value.length.toString());
+    }
+
+    final response = await dioClient.postUri(uri, data: formData);
+
+    if (response.statusCode == 200) {
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.data.toString());
+      debugPrint('Update success');
+      return int.parse(response.data.toString());
+    } else {
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.data.toString());
+      debugPrint(response.headers.map.toString());
+      debugPrint(response.statusMessage);
+      if (response.statusCode == 401) logoutCallback();
+      throw Exception('Failed to update task ${task.toString()}');
+    }
+  }
+
+  Future<bool> updateTaskWithAttachments(
+      List<Object> objects, Task task) async {
+    var uri =
+        Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task');
+
+    debugPrint('Create: ' + json.encode(task));
+
+    final dio.Dio dioClient = new dio.Dio();
+    dioClient.options.headers["Authorization"] = _bearerAuth;
+    //dioClient.options.contentType = "multipart/form-data";
+    debugPrint("Object amount: " + objects.length.toString());
+    List<File> fileList = new List<File>();
+    for (Object object in objects) {
+      if (object is File && object != null) {
+        fileList.add(object);
+      }
+    }
+    debugPrint("Object amount (files): " + fileList.length.toString());
+    var formData = dio.FormData();
+    formData.files.add(MapEntry(
+        'task',
+        new dio.MultipartFile.fromString(json.encode(task),
+            contentType: MediaType('application', 'json'))));
+    for (File file in fileList) {
+      String newFileName =
+          await ImageJpeg.encodeJpeg(file.path, null, 70, 1600, 900);
+      formData.files.add(MapEntry(
+          "attachment",
+          await dio.MultipartFile.fromFile(newFileName,
+              filename: basename(file.path),
+              contentType: MediaType.parse("image/jpeg"))));
+    }
+
+    final response = await dioClient.postUri(uri, data: formData);
+
+    if (response.statusCode == 200) {
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.data.toString());
+      debugPrint('Update success');
+      return true;
+    } else {
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.data.toString());
+      debugPrint(response.headers.map.toString());
+      debugPrint(response.statusMessage);
+      if (response.statusCode == 401) logoutCallback();
+      throw Exception('Failed to update task ${task.toString()}');
+    }
   }
 
 //  Future<Image> getAttachmentsForTask(int id) async {
@@ -73,6 +190,7 @@ class HttpTaskProvider {
   Future<List<Task>> _getTaskList(int lastTaskId, TaskStatus taskStatus,
       String searchString, int assignee, int amount) async {
     debugPrint("getTasksList");
+    debugPrint("lastTaskId " + lastTaskId.toString());
     debugPrint(_bearerAuth);
     Map body = ({
       'status': EnumToString.parse(taskStatus),
@@ -83,6 +201,7 @@ class HttpTaskProvider {
     if (assignee != null) {
       body.addAll(({"assignee": assignee}));
     }
+    debugPrint(body.toString());
     http.Response response = await http.post(
       "https://greenapp-gateway.herokuapp.com/task-provider/tasks",
       headers: <String, String>{
@@ -165,6 +284,32 @@ class HttpTaskProvider {
       debugPrint(response.body.toString());
       if (response.statusCode == 401) logoutCallback();
       throw Exception('Failed to parse tasks');
+    }
+  }
+
+  Future<Uint8List> getAttachment(int id) async {
+    http.Response response = await http.get(
+      "https://greenapp-gateway.herokuapp.com/task-provider/attachment/$id",
+      headers: <String, String>{
+        'Authorization': _bearerAuth,
+      },
+    );
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      debugPrint("Success");
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body.toString());
+      return response.bodyBytes;
+    } else {
+      // If the server did no
+      //t return a 201 CREATED response,
+      // then throw an exception
+      debugPrint("Fail");
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body.toString());
+      if (response.statusCode == 401) logoutCallback();
+      throw Exception('Failed to get file');
     }
   }
 }

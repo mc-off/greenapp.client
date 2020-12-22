@@ -4,18 +4,24 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
+import 'package:greenapp/models/user.dart';
+import 'package:greenapp/pages/task_creation.dart';
 import 'package:greenapp/pages/task_list.dart';
+import 'package:greenapp/services/base_auth.dart';
 import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
 final int INITIAL_ID_FOR_TASKS = 0;
 
 class TasksTab extends StatefulWidget {
-  TasksTab({this.baseTaskProvider});
+  TasksTab({this.baseTaskProvider, this.baseAuth});
 
   @required
   final BaseTaskProvider baseTaskProvider;
+  @required
+  final BaseAuth baseAuth;
 
   @override
   _TasksTabState createState() {
@@ -32,6 +38,29 @@ class _TasksTabState extends State<TasksTab> {
     1: Text("Assigned"),
   };
 
+  final buttonWidget = <Widget>[
+    CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: () {
+        debugPrint("Check TODO clicked");
+      },
+      child: const Icon(
+        CupertinoIcons.check_mark_circled,
+        semanticLabel: 'VoteToDo',
+      ),
+    ),
+    CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: () {
+        debugPrint("Check resolve clicked");
+      },
+      child: const Icon(
+        CupertinoIcons.check_mark_circled,
+        semanticLabel: 'VoteResolve',
+      ),
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return new NestedScrollView(
@@ -39,6 +68,27 @@ class _TasksTabState extends State<TasksTab> {
           return <Widget>[
             CupertinoSliverNavigationBar(
               largeTitle: Text('Tasks'),
+              leading: GestureDetector(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "Add",
+                    style: TextStyle(
+                      color: CupertinoColors.activeBlue,
+                      fontSize: 18.0,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                          builder: (context) => TaskCreationPage(
+                                baseTaskProvider: widget.baseTaskProvider,
+                              )));
+                },
+              ),
+              trailing: buttonWidget[theriGroupVakue],
             ),
             SliverPersistentHeader(
               delegate: _SliverAppBarDelegate(Container(
@@ -82,39 +132,56 @@ class _TasksTabState extends State<TasksTab> {
           ];
         },
         body: FutureBuilder(
-                        future: (segmentValue == TaskStatus.CREATED)
-                            ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
-                            : widget.baseTaskProvider
-                            .getTasksForUser(INITIAL_ID_FOR_TASKS, 1),
-                        builder: (context, projectSnapshot) {
-                          debugPrint(EnumToString.parse(projectSnapshot.connectionState));
-                          if (projectSnapshot.hasError)
-                            return PlaceHolderContent(
-                              title: "Problem Occurred",
-                              message: "Internet not connect try again",
-                              tryAgainButton: _tryAgainButtonClick,
-                            );
-                          switch (projectSnapshot.connectionState) {
-                            case ConnectionState.waiting:
-                              return _showCircularProgress();
-                            case ConnectionState.done:
-                              return TaskList(
-                                baseTaskProvider: widget.baseTaskProvider,
-                                taskList: projectSnapshot.data,
-                                taskStatus: segmentValue,
-                              );
-                            default:
-                              return _showCircularProgress();
-                          }
+            future: (segmentValue == TaskStatus.CREATED)
+                ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
+                : widget.baseTaskProvider
+                    .getTasksForUser(INITIAL_ID_FOR_TASKS, UserType.LOCAL),
+            builder: (context, projectSnapshot) {
+              debugPrint(EnumToString.parse(projectSnapshot.connectionState));
+              if (projectSnapshot.hasError)
+                return PlaceHolderContent(
+                  title: "Problem Occurred",
+                  message: "Internet not connect try again",
+                  tryAgainButton: _tryAgainButtonClick,
+                );
+              switch (projectSnapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return _showCircularProgress();
+                case ConnectionState.done:
+                  {
+                    return projectSnapshot.data.length == 0
+                        ? _noItemOnServer()
+                        : TaskList(
+                            baseTaskProvider: widget.baseTaskProvider,
+                            taskList: projectSnapshot.data,
+                            taskStatus: segmentValue,
+                          );
+                  }
+                default:
+                  return _showCircularProgress();
+              }
             }));
   }
 
+  void update() {}
+
   _tryAgainButtonClick(bool _) => setState(() {
-    _showCircularProgress();
-  });
+        _showCircularProgress();
+      });
 
   Widget _showCircularProgress() {
     return Center(child: CupertinoActivityIndicator());
+  }
+
+  Widget _noItemOnServer() {
+    debugPrint("No items displayed");
+    return Center(
+      child: Text(
+        'Where is not any items on server',
+        style: Styles.body15Regular(),
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 
   Future<List<Task>> getTasksList() async {

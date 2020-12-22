@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
+import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/pages/task_row_item.dart';
 import 'package:greenapp/services/base_task_provider.dart';
@@ -84,7 +85,7 @@ class _TaskListState extends State<TaskList> {
             });
           } else {
             widget.baseTaskProvider
-                .getTasksForUser(lastTaskID, 1)
+                .getTasksForUser(lastTaskID, UserType.LOCAL)
                 .then((newTaskList) {
               lastTaskID = newTaskList.last.id;
               loadStatus = TaskLoadStatus.STABLE;

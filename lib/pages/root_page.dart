@@ -65,7 +65,11 @@ class _RootPageState extends State<RootPage> {
         content: new Text("Your session is over\nPlease, re-login"),
         actions: [
           CupertinoDialogAction(
-              isDefaultAction: false, child: new Text("Close"))
+              isDefaultAction: true,
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.pop(context, "Close");
+              })
         ],
       ),
     );
