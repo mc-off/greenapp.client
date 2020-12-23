@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
+import 'package:greenapp/models/user.dart';
+import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/pages/task_row_item.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:http/http.dart' as http;
@@ -10,8 +12,14 @@ import 'package:http/http.dart' as http;
 class TaskList extends StatefulWidget {
   final BaseTaskProvider baseTaskProvider;
   final List<Task> taskList;
+  final TaskStatus taskStatus;
+  final VoidCallback updateCallback;
 
-  TaskList({this.baseTaskProvider, this.taskList});
+  TaskList(
+      {this.baseTaskProvider,
+      this.taskList,
+      this.taskStatus,
+      this.updateCallback});
 
   @override
   _TaskListState createState() => _TaskListState();
@@ -53,7 +61,19 @@ class _TaskListState extends State<TaskList> {
     return ListView.builder(
       itemCount: tasks.length,
       itemBuilder: (BuildContext context, int index) {
-        return TaskRowItem(task: tasks[index]);
+        return new GestureDetector(
+            //You need to make my child interactive
+            onTap: () {
+              Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (context) => TaskItem(
+                            baseTaskProvider: widget.baseTaskProvider,
+                            task: tasks[index],
+                            updateCallback: widget.updateCallback,
+                          )));
+            },
+            child: new TaskRowItem(task: tasks[index]));
       },
     );
   }
@@ -63,11 +83,21 @@ class _TaskListState extends State<TaskList> {
       if (notification.metrics.pixels == notification.metrics.maxScrollExtent) {
         if (loadStatus != null && loadStatus == TaskLoadStatus.STABLE) {
           loadStatus = TaskLoadStatus.LOADING;
-          widget.baseTaskProvider.getTasks(lastTaskID).then((newTaskList) {
-            lastTaskID = newTaskList.last.id;
-            loadStatus = TaskLoadStatus.STABLE;
-            setState(() => tasks.addAll(newTaskList));
-          });
+          if (widget.taskStatus == TaskStatus.CREATED) {
+            widget.baseTaskProvider.getTasks(lastTaskID).then((newTaskList) {
+              lastTaskID = newTaskList.last.id;
+              loadStatus = TaskLoadStatus.STABLE;
+              setState(() => tasks.addAll(newTaskList));
+            });
+          } else {
+            widget.baseTaskProvider
+                .getTasksForUser(lastTaskID, UserType.LOCAL)
+                .then((newTaskList) {
+              lastTaskID = newTaskList.last.id;
+              loadStatus = TaskLoadStatus.STABLE;
+              setState(() => tasks.addAll(newTaskList));
+            });
+          }
         }
       }
     }

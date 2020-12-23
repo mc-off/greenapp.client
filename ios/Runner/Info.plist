@@ -26,6 +26,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSCameraUsageDescription</key>
+    <string>Used to demonstrate image picker plugin</string>
+   	<key>NSMicrophoneUsageDescription</key>
+   	<string>Used to capture audio for image picker plugin</string>
+   	<key>NSPhotoLibraryUsageDescription</key>
+   	<string>Used to demonstrate image picker plugin</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -43,5 +49,9 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
     <string>YES</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+      <string>This app needs your location to test the location feature of the Google Maps location picker plugin.</string>
+      <key>io.flutter.embedded_views_preview</key>
+      <true/>
 </dict>
 </plist>

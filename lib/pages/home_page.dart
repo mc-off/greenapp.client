@@ -44,11 +44,12 @@ class _HomePageState extends State<HomePage> {
       ),
       tabBuilder: (context, index) {
         CupertinoTabView returnValue;
-        TaskProvider _taskProvider = TaskProvider(widget.auth);
+        TaskProvider _taskProvider =
+            TaskProvider(widget.auth, widget.logoutCallback);
         switch (index) {
           case 0:
             returnValue = CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
+              return new CupertinoPageScaffold(
                   child: TasksTab(
                 baseTaskProvider: _taskProvider,
               ));
@@ -56,7 +57,7 @@ class _HomePageState extends State<HomePage> {
             break;
           case 1:
             returnValue = CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
+              return new CupertinoPageScaffold(
                 child: MapTab(
                   baseTaskProvider: _taskProvider,
                 ),
@@ -64,20 +65,23 @@ class _HomePageState extends State<HomePage> {
             });
             break;
           case 2:
-            returnValue = CupertinoTabView(builder: (context) {
+            returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: MarketTab(),
+                child: MarketTab(
+                  baseAuth: widget.auth,
+                ),
               );
             });
             break;
           case 3:
-            returnValue = CupertinoTabView(builder: (context) {
+            returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: ProfileTab(
-                    userId: widget.userId,
-                    auth: widget.auth,
-                    logoutCallback: widget.logoutCallback),
-              );
+                  child: ProfileTab(
+                userId: widget.userId,
+                auth: widget.auth,
+                logoutCallback: widget.logoutCallback,
+                baseTaskProvider: _taskProvider,
+              ));
             });
             break;
         }
