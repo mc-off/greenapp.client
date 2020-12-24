@@ -143,7 +143,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     super.dispose();
   }
 
-  bool myInterceptor(bool stopDefaultButtonEvent) {
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
     dispose();
     return true;
   }
