@@ -57,7 +57,7 @@ class _TaskItemState extends State<TaskItem> {
     super.dispose();
   }
 
-  bool myInterceptor(bool stopDefaultButtonEvent) {
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
     dispose();
     return true;
   }
@@ -198,7 +198,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
     super.dispose();
   }
 
-  bool myInterceptor(bool stopDefaultButtonEvent) {
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
     dispose();
     return true;
   }

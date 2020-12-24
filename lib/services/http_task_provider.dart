@@ -12,7 +12,7 @@ import 'package:http_parser/src/media_type.dart';
 import 'package:image_jpeg/image_jpeg.dart';
 import 'package:path/path.dart';
 
-import 'package:google_map_location_picker/generated/i18n.dart'
+import 'package:google_map_location_picker/google_map_location_picker.dart'
     as location_picker;
 
 import 'package:http/http.dart' as http;
