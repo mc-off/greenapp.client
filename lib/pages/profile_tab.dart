@@ -46,7 +46,7 @@ class _ProfileTabState extends State<ProfileTab> {
         delegate: SliverChildListDelegate(
           [
             Container(
-              height: 240,
+              height: 90,
               child: FutureBuilder(
                   future: getProfile(),
                   builder: (BuildContext context,
@@ -63,9 +63,14 @@ class _ProfileTabState extends State<ProfileTab> {
                       case ConnectionState.waiting:
                         return _showCircularProgress();
                       case ConnectionState.done:
+                        _name.text = projectSnapshot.data.name !=null ? projectSnapshot.data.name : '';
+                        _description.text = projectSnapshot.data.description !=null ? projectSnapshot.data.description : '';
                         return Row(
                           children: <Widget>[
-                            ClipOval(
+                            Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            16, 12, 0 , 12),
+                            child: ClipOval(
                               child: (projectSnapshot.data.attachmentId != null)
                                   ? Image(
                                       image: NetworkImage(
@@ -80,28 +85,30 @@ class _ProfileTabState extends State<ProfileTab> {
                                       ),
                                       height: 70,
                                       width: 70,
+                                      fit: BoxFit.cover,
                                     )
                                   : Image(
-                                      image: AssetImage("assets/gallery3.jpg"),
-                                      width: 100,
-                                      height: 100,
+                                      image: AssetImage("assets/no_image_available.png"),
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
                                     ),
-                            ),
+                            )),
                             Expanded(
                                 child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12),
                                     child: Column(
                                       children: <Widget>[
-                                        _showSubTitle("Name"),
+                                        // _showSubTitle("Name"),
                                         _showNameInput(),
-                                        _showSubTitle("Surname"),
-                                        _showSurnameInput(),
-                                        _showSubTitle("Description"),
+                                        // _showSubTitle("Surname"),
+                                        // _showSurnameInput(),
+                                        //_showSubTitle("Description"),
                                         _showDescriptionInput(),
                                       ],
                                       mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                          MainAxisAlignment.center,
                                     )))
                           ],
                         );
@@ -158,13 +165,15 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   Widget _showSubTitle(String text) {
-    return Padding(
+    return Container(
+      alignment: Alignment.centerLeft,
+        child: Padding(
       padding: EdgeInsets.only(top: 10),
       child: Text(
         '$text',
         style: Styles.body13RegularGray(),
       ),
-    );
+        ));
   }
 
   Widget _showNameInput() {
@@ -174,8 +183,11 @@ class _ProfileTabState extends State<ProfileTab> {
         maxLines: 1,
         obscureText: false,
         autofocus: false,
+        decoration: null,
         enabled: _isEditEnabled,
         controller: _name,
+        style: Styles.body17Medium(),
+        placeholder: 'No value for name',
       ),
     );
   }
@@ -195,13 +207,16 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Widget _showDescriptionInput() {
     return new Padding(
-      padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
+      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 8.0),
       child: new CupertinoTextField(
-        maxLines: 3,
+        maxLines: 1,
         obscureText: false,
         autofocus: false,
+        decoration: null,
+        style: Styles.body13RegularGray(),
         enabled: _isEditEnabled,
         controller: _description,
+        placeholder: 'No value for description',
       ),
     );
   }
