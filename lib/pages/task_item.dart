@@ -316,7 +316,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
       return Padding(
           padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
           child: SizedBox(
-            height: 50.0,
+            height: widget.isEditable ? 50.0 : 70.0,
             child: new CupertinoButton.filled(
               disabledColor: CupertinoColors.quaternarySystemFill,
               pressedOpacity: 0.4,
