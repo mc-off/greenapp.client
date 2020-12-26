@@ -12,7 +12,8 @@ import 'package:greenapp/widgets/placeholder_content.dart';
 
 const String address =
     "https://greenapp-client-provider.herokuapp.com/client-provider/client/";
-const String addressAttach = "https://greenapp-client-provider.herokuapp.com/client-provider/attachment/";
+const String addressAttach =
+    "https://greenapp-client-provider.herokuapp.com/client-provider/attachment/";
 
 class ProfileTab extends StatefulWidget {
   ProfileTab(
@@ -117,15 +118,8 @@ class _ProfileTabState extends State<ProfileTab> {
                                       fit: BoxFit.cover,
                                     )
                                   : Image(
-                                      image: NetworkImage(
-                                        addressAttach +
-                                            1.toString(),
-                                        headers: <String, String>{
-                                          'Authorization':
-                                          widget.baseTaskProvider.getAuth(),
-                                          'X-GREEN-APP-ID': "GREEN"
-                                        },
-                                      ),
+                                      image: AssetImage(
+                                          "assets/no_image_available.png"),
                                       width: 70,
                                       height: 70,
                                       fit: BoxFit.cover,
