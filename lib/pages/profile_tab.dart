@@ -12,8 +12,7 @@ import 'package:greenapp/widgets/placeholder_content.dart';
 
 const String address =
     "https://greenapp-client-provider.herokuapp.com/client-provider/client/";
-const String addressAttach =
-    "https://greenapp-client-provider.herokuapp.com/client-provider/attachment/";
+const String addressAttach = "https://greenapp-client-provider.herokuapp.com/client-provider/attachment/";
 
 class ProfileTab extends StatefulWidget {
   ProfileTab(
@@ -35,43 +34,73 @@ class _ProfileTabState extends State<ProfileTab> {
   TextEditingController _name = TextEditingController();
   TextEditingController _surname = TextEditingController();
   TextEditingController _description = TextEditingController();
+  Image _image;
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(semanticChildCount: 1, slivers: <Widget>[
-      const CupertinoSliverNavigationBar(
+      CupertinoSliverNavigationBar(
         largeTitle: Text('Profile'),
+        trailing: GestureDetector(
+          child: Padding(
+            padding: EdgeInsets.only(top: 10.0),
+            child: Text(
+              "Edit",
+              style: TextStyle(
+                color: CupertinoColors.activeBlue,
+                fontSize: 18.0,
+              ),
+            ),
+          ),
+          onTap: () {
+            setState(() {
+              _isEditEnabled = !_isEditEnabled;
+            });
+          },
+        ),
       ),
       SliverList(
         delegate: SliverChildListDelegate(
           [
             Container(
-              height: 90,
-              child: FutureBuilder(
-                  future: getProfile(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<Profile> projectSnapshot) {
-                    if (projectSnapshot.hasError)
-                      return PlaceHolderContent(
-                        title: "Problem Occurred",
-                        message: "Internet not connect try again",
-                        tryAgainButton: _tryAgainButtonClick,
-                      );
-                    debugPrint(
-                        EnumToString.parse(projectSnapshot.connectionState));
-                    switch (projectSnapshot.connectionState) {
-                      case ConnectionState.waiting:
-                        return _showCircularProgress();
-                      case ConnectionState.done:
-                        _name.text = projectSnapshot.data.name !=null ? projectSnapshot.data.name : '';
-                        _description.text = projectSnapshot.data.description !=null ? projectSnapshot.data.description : '';
-                        return Row(
-                          children: <Widget>[
-                            Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            16, 12, 0 , 12),
-                            child: ClipOval(
-                              child: (projectSnapshot.data.attachmentId != null)
+                height: 90,
+                child: !_isEditEnabled
+                    ? FutureBuilder(
+                        future: getProfile(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<Profile> projectSnapshot) {
+                          if (projectSnapshot.hasError)
+                            return Center(
+                                child: GestureDetector(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 10.0),
+                                child: Text(
+                                  "Try again",
+                                  style: TextStyle(
+                                    color: CupertinoColors.activeBlue,
+                                    fontSize: 18.0,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                _tryAgainButtonClick(true);
+                              },
+                            ));
+                          debugPrint(EnumToString.parse(
+                              projectSnapshot.connectionState));
+                          switch (projectSnapshot.connectionState) {
+                            case ConnectionState.waiting:
+                              return _showCircularProgress();
+                            case ConnectionState.done:
+                              _name.text = projectSnapshot.data.name != null
+                                  ? projectSnapshot.data.name
+                                  : '';
+                              _description.text =
+                                  projectSnapshot.data.description != null
+                                      ? projectSnapshot.data.description
+                                      : '';
+                              _image = (projectSnapshot.data.attachmentId !=
+                                      null)
                                   ? Image(
                                       image: NetworkImage(
                                         addressAttach +
@@ -88,35 +117,73 @@ class _ProfileTabState extends State<ProfileTab> {
                                       fit: BoxFit.cover,
                                     )
                                   : Image(
-                                      image: AssetImage("assets/no_image_available.png"),
+                                      image: NetworkImage(
+                                        addressAttach +
+                                            1.toString(),
+                                        headers: <String, String>{
+                                          'Authorization':
+                                          widget.baseTaskProvider.getAuth(),
+                                          'X-GREEN-APP-ID': "GREEN"
+                                        },
+                                      ),
                                       width: 70,
                                       height: 70,
                                       fit: BoxFit.cover,
-                                    ),
-                            )),
-                            Expanded(
-                                child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12),
-                                    child: Column(
-                                      children: <Widget>[
-                                        // _showSubTitle("Name"),
-                                        _showNameInput(),
-                                        // _showSubTitle("Surname"),
-                                        // _showSurnameInput(),
-                                        //_showSubTitle("Description"),
-                                        _showDescriptionInput(),
-                                      ],
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                    )))
-                          ],
-                        );
-                      default:
-                        return _showCircularProgress();
-                    }
-                  }),
-            ),
+                                    );
+                              return Row(
+                                children: <Widget>[
+                                  Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          16, 12, 0, 12),
+                                      child: ClipOval(
+                                        child: _image,
+                                      )),
+                                  Expanded(
+                                      child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12),
+                                          child: Column(
+                                            children: <Widget>[
+                                              // _showSubTitle("Name"),
+                                              _showNameInput(),
+                                              // _showSubTitle("Surname"),
+                                              // _showSurnameInput(),
+                                              //_showSubTitle("Description"),
+                                              _showDescriptionInput(),
+                                            ],
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                          )))
+                                ],
+                              );
+                            default:
+                              return _showCircularProgress();
+                          }
+                        })
+                    : Row(
+                        children: <Widget>[
+                          Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
+                              child: ClipOval(
+                                child: _image,
+                              )),
+                          Expanded(
+                              child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  child: Column(
+                                    children: <Widget>[
+                                      // _showSubTitle("Name"),
+                                      _showNameInput(),
+                                      // _showSubTitle("Surname"),
+                                      // _showSurnameInput(),
+                                      //_showSubTitle("Description"),
+                                      _showDescriptionInput(),
+                                    ],
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  )))
+                        ],
+                      )),
             Row(children: <Widget>[ClipOval()]),
             const CSHeader('Session'),
             CSButton(CSButtonType.DESTRUCTIVE, "Sign out", () {
@@ -166,13 +233,13 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Widget _showSubTitle(String text) {
     return Container(
-      alignment: Alignment.centerLeft,
+        alignment: Alignment.centerLeft,
         child: Padding(
-      padding: EdgeInsets.only(top: 10),
-      child: Text(
-        '$text',
-        style: Styles.body13RegularGray(),
-      ),
+          padding: EdgeInsets.only(top: 10),
+          child: Text(
+            '$text',
+            style: Styles.body13RegularGray(),
+          ),
         ));
   }
 
@@ -183,7 +250,24 @@ class _ProfileTabState extends State<ProfileTab> {
         maxLines: 1,
         obscureText: false,
         autofocus: false,
-        decoration: null,
+        onTap: null,
+        decoration: _isEditEnabled
+            ? BoxDecoration(
+                color: CupertinoDynamicColor.withBrightness(
+                  color: CupertinoColors.white,
+                  darkColor: CupertinoColors.black,
+                ),
+                border: Border.all(
+                  color: CupertinoDynamicColor.withBrightness(
+                    color: Color(0x33000000),
+                    darkColor: Color(0x33FFFFFF),
+                  ),
+                  style: BorderStyle.solid,
+                  width: 0.0,
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              )
+            : null,
         enabled: _isEditEnabled,
         controller: _name,
         style: Styles.body17Medium(),
@@ -207,12 +291,28 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Widget _showDescriptionInput() {
     return new Padding(
-      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 8.0),
+      padding: const EdgeInsets.fromLTRB(0.0, 4.0, 0.0, 8.0),
       child: new CupertinoTextField(
         maxLines: 1,
         obscureText: false,
         autofocus: false,
-        decoration: null,
+        decoration: _isEditEnabled
+            ? BoxDecoration(
+                color: CupertinoDynamicColor.withBrightness(
+                  color: CupertinoColors.white,
+                  darkColor: CupertinoColors.black,
+                ),
+                border: Border.all(
+                  color: CupertinoDynamicColor.withBrightness(
+                    color: Color(0x33000000),
+                    darkColor: Color(0x33FFFFFF),
+                  ),
+                  style: BorderStyle.solid,
+                  width: 0.0,
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              )
+            : null,
         style: Styles.body13RegularGray(),
         enabled: _isEditEnabled,
         controller: _description,
