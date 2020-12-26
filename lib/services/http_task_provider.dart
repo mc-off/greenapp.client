@@ -290,7 +290,7 @@ class HttpTaskProvider {
       var addresses =
           await Geocoder.local.findAddressesFromCoordinates(coordinates);
       var first = addresses.first;
-      task.address = first.addressLine;
+      task.address = first.locality!=null ? first.featureName + ' ' + first.locality : first.featureName;
       return task;
     } else {
       // If the server did no
