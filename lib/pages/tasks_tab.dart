@@ -13,14 +13,13 @@ import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
-final int INITIAL_ID_FOR_TASKS = 0;
+final int INITIAL_ID_FOR_TASKS = 1;
 
 class TasksTab extends StatefulWidget {
   TasksTab({this.baseTaskProvider});
 
   @required
   final BaseTaskProvider baseTaskProvider;
-
 
   @override
   _TasksTabState createState() {
@@ -195,8 +194,7 @@ class _TasksTabState extends State<TasksTab> {
         body: FutureBuilder(
             future: (segmentValue == TaskStatus.CREATED)
                 ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
-                : widget.baseTaskProvider
-                    .getTasksForUser(INITIAL_ID_FOR_TASKS),
+                : widget.baseTaskProvider.getTasksForUser(0),
             builder: (context, projectSnapshot) {
               debugPrint(EnumToString.parse(projectSnapshot.connectionState));
               if (projectSnapshot.hasError)

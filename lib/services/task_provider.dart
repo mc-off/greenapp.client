@@ -10,7 +10,6 @@ import 'package:greenapp/services/http_task_provider.dart';
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class TaskProvider implements BaseTaskProvider {
-  User _user;
   HttpTaskProvider _httpTaskProvider;
   VoidCallback logoutCallback;
 
@@ -41,7 +40,6 @@ class TaskProvider implements BaseTaskProvider {
   @override
   Future<List<Task>> getTasksForUser(int lastTaskId) async {
     final user = _auth.currentUser;
-    this._user = user;
     debugPrint("Set user id: " + user.uid);
     return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, user.uid);
   }
@@ -68,12 +66,13 @@ class TaskProvider implements BaseTaskProvider {
   @override
   Future<bool> updateTaskWithAttachments(
       List<Object> objects, Task task) async {
-    task.assignee = _user.uid;
+    task.assignee = _auth.currentUser.uid;
     return _httpTaskProvider.updateTaskWithAttachments(objects, task);
   }
 
   Future<bool> voteForTask(Task task, VoteChoice voteChoice) {
-    return _httpTaskProvider.voteForTask(task, voteChoice, _user.uid);
+    return _httpTaskProvider.voteForTask(
+        task, voteChoice, _auth.currentUser.uid);
   }
 
   String getToken() {
@@ -83,6 +82,6 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   String getUserId() {
-    return _user.uid;
+    return _auth.currentUser.uid;
   }
 }
