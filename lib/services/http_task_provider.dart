@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -17,6 +18,8 @@ import 'package:google_map_location_picker/google_map_location_picker.dart'
 
 import 'package:http/http.dart' as http;
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class HttpTaskProvider {
   final String _bearerAuth;
   final VoidCallback logoutCallback;
@@ -27,7 +30,7 @@ class HttpTaskProvider {
     return _getTaskList(lastTaskId, TaskStatus.CREATED, "", null, 10);
   }
 
-  Future<List<Task>> getTasksForCurrentUser(int lastTaskId, int userId) async {
+  Future<List<Task>> getTasksForCurrentUser(int lastTaskId, String userId) async {
     return _getTaskList(lastTaskId, TaskStatus.CREATED, "", userId, 10);
   }
 
@@ -192,7 +195,7 @@ class HttpTaskProvider {
 //  }
 
   Future<List<Task>> _getTaskList(int lastTaskId, TaskStatus taskStatus,
-      String searchString, int assignee, int amount) async {
+      String searchString, String assignee, int amount) async {
     debugPrint("getTasksList");
     debugPrint("lastTaskId " + lastTaskId.toString());
     debugPrint(_bearerAuth);
@@ -202,7 +205,7 @@ class HttpTaskProvider {
       "offset": lastTaskId,
       "searchString": searchString,
     });
-    if (assignee != null) {
+    if (assignee != null && assignee.isNotEmpty) {
       body.addAll(({"assignee": assignee}));
     }
     debugPrint(body.toString());
@@ -245,7 +248,7 @@ class HttpTaskProvider {
     var uri = Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task',
         queryParameters);
 
-    task.assignee = 1;
+    task.assignee = 'ybhM9WhJfXQJ5tMmDWGJRhZyk272';
 
     debugPrint('Update: ' + json.encode(task));
 
@@ -313,7 +316,7 @@ class HttpTaskProvider {
   }
 
   Future<bool> voteForTask(
-      Task task, VoteChoice voteChoice, int clientId) async {
+      Task task, VoteChoice voteChoice, String clientId) async {
     Map body = ({
       "taskId": task.id,
       "clientId": clientId,

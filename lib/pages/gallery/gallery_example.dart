@@ -31,12 +31,12 @@ class _GalleryExampleState extends State<GalleryExample> {
 
   initList() {
     debugPrint(widget.attachArray.length.toString());
-    debugPrint(widget.baseTaskProvider.getAuth());
+    debugPrint(widget.baseTaskProvider.getToken());
     for (int i in widget.attachArray) {
       galleryItems.add(GalleryExampleItem(
           id: i,
           resource: <String, String>{
-            'Authorization': widget.baseTaskProvider.getAuth(),
+            'Authorization': widget.baseTaskProvider.getToken(),
             'X-GREEN-APP-ID': "GREEN"
           },
           isSvg: false));

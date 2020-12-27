@@ -1,37 +1,31 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/models/user.dart';
-import 'package:greenapp/services/base_auth.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/services/http_task_provider.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class TaskProvider implements BaseTaskProvider {
-  String _auth;
   User _user;
-  BaseAuth _baseAuth;
   HttpTaskProvider _httpTaskProvider;
   VoidCallback logoutCallback;
 
-  TaskProvider(this._baseAuth, this.logoutCallback) {
-    this._baseAuth = _baseAuth;
+  TaskProvider(this.logoutCallback) {
     this.logoutCallback = logoutCallback;
     _setHttpProvider();
   }
 
   @override
-  // TODO: implement baseAuth
-  BaseAuth get baseAuth => _baseAuth;
-
-  @override
   Future<int> createTask(
-      List<Object> objects, Task task, UserType userType) async {
-    final user = await _baseAuth.getCurrentUser();
-    task.createdBy = user.clientId;
-    task.assignee = user.clientId;
-    debugPrint("Set user id: " + user.clientId.toString());
+      List<Object> objects, Task task) async {
+    final user = _auth.currentUser;
+    task.createdBy = user.uid;
+    task.assignee = user.uid;
+    debugPrint("Set user id: " + user.uid);
     return _httpTaskProvider.createTask(objects, task);
   }
 
@@ -46,21 +40,16 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<List<Task>> getTasksForUser(int lastTaskId, UserType userType) async {
-    final user = await _baseAuth.getCurrentUser();
+  Future<List<Task>> getTasksForUser(int lastTaskId) async {
+    final user = _auth.currentUser;
     this._user = user;
-    debugPrint("Set user id: " + user.clientId.toString());
-    return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, user.clientId);
+    debugPrint("Set user id: " + user.uid);
+    return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, user.uid);
   }
 
   @override
   Future<bool> updateTask(Task task) {
     return _httpTaskProvider.updateTask(task);
-  }
-
-  @override
-  void set baseAuth(BaseAuth _baseAuth) {
-    _setHttpProvider();
   }
 
   Future<void> _setHttpProvider() async {
@@ -69,11 +58,11 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   Future<String> _getAuthToken() async {
-    final user = await _baseAuth.getCurrentUser();
+    final user =  _auth.currentUser;
     debugPrint("User is: " + user.toString());
-    this._auth = 'Bearer ' + user.token.toString();
+    final token = await user.getIdToken();
     this._user = user;
-    return 'Bearer ' + user.token.toString();
+    return 'Bearer ' + token;
   }
 
   @override
@@ -89,19 +78,21 @@ class TaskProvider implements BaseTaskProvider {
   @override
   Future<bool> updateTaskWithAttachments(
       List<Object> objects, Task task) async {
-    task.assignee = _user.clientId;
+    task.assignee = _user.uid;
     return _httpTaskProvider.updateTaskWithAttachments(objects, task);
   }
 
   Future<bool> voteForTask(Task task, VoteChoice voteChoice) {
-    return _httpTaskProvider.voteForTask(task, voteChoice, _user.clientId);
+    return _httpTaskProvider.voteForTask(task, voteChoice, _user.uid);
   }
 
-  String getAuth() {
-    return _auth;
+  String getToken() {
+    String token;
+    _auth.currentUser.getIdToken().then((value) => token = value);
+    return token;
   }
 
-  int getUserId() {
-    return _user.clientId;
+  String getUserId() {
+    return _user.uid;
   }
 }

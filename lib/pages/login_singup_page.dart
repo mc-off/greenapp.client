@@ -1,14 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/text-styles.dart';
 import 'package:greenapp/pages/validate_email_page.dart';
 
-import 'package:greenapp/services/base_auth.dart';
+
 
 enum _DoubleConstants {
   textFieldContainerHeight,
   textFieldContainerWidth,
   textFieldDecorationBorderWidth
 }
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 extension _DoubleConstantsExtension on _DoubleConstants {
   double get value {
@@ -26,9 +29,8 @@ extension _DoubleConstantsExtension on _DoubleConstants {
 }
 
 class LoginSignUpPage extends StatefulWidget {
-  LoginSignUpPage({this.auth, this.loginCallback});
+  LoginSignUpPage({this.loginCallback});
 
-  final BaseAuth auth;
   final VoidCallback loginCallback;
 
   @override
@@ -74,20 +76,23 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
       String userId = "";
       try {
         if (_isLoginForm) {
-          userId =
-              await widget.auth.signIn(_email.value.text, _password.value.text);
+          final User user = (await _auth.signInWithEmailAndPassword(
+            email: _email.value.text,
+            password: _password.value.text,
+          ))
+              .user;
+          userId = await user.getIdToken();
           print('Signed in: $userId');
         } else {
-          bool isCodeSended = await widget.auth.signUp(
-              _email.value.text,
-              _password.value.text,
-              _firstName.value.text,
-              _secondName.value.text,
-              "2011-11-11");
-          if (isCodeSended) {
-            debugPrint('Code se1315nded to ${_email.value.text}');
-            _showValidationEmailPage(_email.value.text);
-          }
+          await _auth.createUserWithEmailAndPassword (
+              email: _email.value.text,
+              password: _password.value.text,
+          ).then((user) {
+            //If a user is successfully created with an appropriate email
+            if (user.user != null){
+              user.user.sendEmailVerification();
+            }
+          });
           //widget.auth.sendEmailVerification();
           //_showVerifyEmailSentDialog();
         }
@@ -150,8 +155,8 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                   showMainHint(),
                   showEmailInput(),
                   showPasswordInput(),
-                  showFirstNameInput(),
-                  showSecondNameInput(),
+                  //showFirstNameInput(),
+                  //showSecondNameInput(),
                   //showBirthDateInput(),
                   showPrimaryButton(),
                   showSecondaryButton(),
@@ -180,7 +185,6 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         context,
         CupertinoPageRoute(
             builder: (context) => ValidateEmailPage(
-                auth: widget.auth,
                 validateCallback: validateCallback,
                 email: email)));
   }
@@ -190,7 +194,6 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         context,
         CupertinoPageRoute(
             builder: (context) => ValidateEmailPage(
-                auth: widget.auth,
                 validateCallback: validateCallback,
                 email: email)));
   }
@@ -433,3 +436,4 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
     );
   }
 }
+

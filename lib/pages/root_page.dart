@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/pages/home_page.dart';
 import 'package:greenapp/pages/login_singup_page.dart';
-import 'package:greenapp/services/base_auth.dart';
 
 enum AuthStatus {
   NOT_DETERMINED,
@@ -9,10 +9,11 @@ enum AuthStatus {
   LOGGED_IN,
 }
 
-class RootPage extends StatefulWidget {
-  RootPage({this.auth});
 
-  final BaseAuth auth;
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
+class RootPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => new _RootPageState();
@@ -20,29 +21,24 @@ class RootPage extends StatefulWidget {
 
 class _RootPageState extends State<RootPage> {
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
-  String _userId = "";
 
   @override
-  void initState() {
+  void initState()  {
     super.initState();
-    widget.auth.getCurrentUser().then((user) {
+    final user = _auth.currentUser;
+    if (user!=null)
       setState(() {
-        if (user.token.isNotEmpty) {
-          _userId = user?.token;
-        }
-        authStatus = user?.token.isEmpty
+        authStatus = user.uid.isEmpty
             ? AuthStatus.NOT_LOGGED_IN
             : AuthStatus.LOGGED_IN;
       });
-    });
+     else
+      setState(() {
+        authStatus = AuthStatus.NOT_LOGGED_IN;
+      });
   }
 
   void loginCallback() {
-    widget.auth.getCurrentUser().then((user) {
-      setState(() {
-        _userId = user.token.toString();
-      });
-    });
     setState(() {
       authStatus = AuthStatus.LOGGED_IN;
     });
@@ -50,9 +46,8 @@ class _RootPageState extends State<RootPage> {
 
   void logoutCallback() {
     setState(() {
-      widget.auth.signOut();
+      _auth.signOut();
       authStatus = AuthStatus.NOT_LOGGED_IN;
-      _userId = "";
       displayDialog();
     });
   }
@@ -92,15 +87,12 @@ class _RootPageState extends State<RootPage> {
         break;
       case AuthStatus.NOT_LOGGED_IN:
         return new LoginSignUpPage(
-          auth: widget.auth,
           loginCallback: loginCallback,
         );
         break;
       case AuthStatus.LOGGED_IN:
-        if (_userId != null) {
+        if (_auth.currentUser != null && _auth.currentUser.uid.isNotEmpty) {
           return new HomePage(
-            userId: _userId,
-            auth: widget.auth,
             logoutCallback: logoutCallback,
           );
         } else

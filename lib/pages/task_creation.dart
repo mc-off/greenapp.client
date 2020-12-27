@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/models/text-styles.dart';
-import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
@@ -120,7 +119,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       );
       debugPrint(json.encode(task).toString());
       final response = await widget.baseTaskProvider
-          .createTask(images, task, UserType.LOCAL);
+          .createTask(images, task);
       if (response != null) {
         task.id = response;
         this.task = task;

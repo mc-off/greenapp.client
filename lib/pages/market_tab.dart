@@ -1,22 +1,24 @@
 import 'dart:convert';
 
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/text-styles.dart';
 import 'package:greenapp/models/unit.dart';
 import 'package:greenapp/pages/gallery/galery_example2.dart';
 import 'package:greenapp/pages/gallery/gallery_example.dart';
-import 'package:greenapp/services/base_auth.dart';
+
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class MarketTab extends StatefulWidget {
-  MarketTab({this.baseAuth, this.logoutCallback});
+  MarketTab({this.logoutCallback});
 
   @required
-  final BaseAuth baseAuth;
   final VoidCallback logoutCallback;
 
   @override
@@ -105,7 +107,7 @@ class _MarketTabState extends State<MarketTab> {
   }
 
   Future<List<Unit>> getUnitList() async {
-    final token = await widget.baseAuth.getCurrentUser();
+    final token = await _auth.currentUser.getIdToken();
     debugPrint(token.toString());
     debugPrint("getTasksList");
     http.Response response = await http.get(
