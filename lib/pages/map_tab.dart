@@ -11,7 +11,7 @@ import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/converters.dart';
 import 'package:location/location.dart';
 
-final int INITIAL_ID_FOR_TASKS = 0;
+final int INITIAL_ID_FOR_TASKS = 800;
 
 class MapTab extends StatefulWidget {
   MapTab({this.baseTaskProvider});
