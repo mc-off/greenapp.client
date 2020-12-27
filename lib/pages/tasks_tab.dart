@@ -4,11 +4,10 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/task_creation.dart';
 import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/pages/task_list.dart';
-import 'package:greenapp/services/base_auth.dart';
+
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
@@ -17,12 +16,11 @@ import 'package:http/http.dart' as http;
 final int INITIAL_ID_FOR_TASKS = 0;
 
 class TasksTab extends StatefulWidget {
-  TasksTab({this.baseTaskProvider, this.baseAuth});
+  TasksTab({this.baseTaskProvider});
 
   @required
   final BaseTaskProvider baseTaskProvider;
-  @required
-  final BaseAuth baseAuth;
+
 
   @override
   _TasksTabState createState() {
@@ -198,7 +196,7 @@ class _TasksTabState extends State<TasksTab> {
             future: (segmentValue == TaskStatus.CREATED)
                 ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
                 : widget.baseTaskProvider
-                    .getTasksForUser(INITIAL_ID_FOR_TASKS, UserType.LOCAL),
+                    .getTasksForUser(INITIAL_ID_FOR_TASKS),
             builder: (context, projectSnapshot) {
               debugPrint(EnumToString.parse(projectSnapshot.connectionState));
               if (projectSnapshot.hasError)

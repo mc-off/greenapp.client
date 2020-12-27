@@ -19,10 +19,10 @@ Task _$TaskFromJson(Map<String, dynamic> json) {
     reward: json['reward'] as int,
     attachmentIds:
         (json['attachmentIds'] as List)?.map((e) => e as int)?.toList(),
-    assignee: json['assignee'] as int,
+    assignee: json['assignee'] as String,
     updated: json['updated'] as String,
     dueDate: json['dueDate'] as String,
-    createdBy: json['createdBy'] as int,
+    createdBy: json['createdBy'] as String,
     created: json['created'] as String,
   )..address = json['address'] as String;
 }

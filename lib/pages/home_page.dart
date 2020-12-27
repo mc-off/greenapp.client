@@ -2,16 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:greenapp/pages/market_tab.dart';
 import 'package:greenapp/pages/profile_tab.dart';
 import 'package:greenapp/pages/tasks_tab.dart';
-import 'package:greenapp/services/base_auth.dart';
+
 import 'package:greenapp/services/task_provider.dart';
 
 import 'map_tab.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({this.userId, this.auth, this.logoutCallback});
+  HomePage({this.logoutCallback});
 
-  final String userId;
-  final BaseAuth auth;
   final VoidCallback logoutCallback;
 
   @override
@@ -45,7 +43,7 @@ class _HomePageState extends State<HomePage> {
       tabBuilder: (context, index) {
         CupertinoTabView returnValue;
         TaskProvider _taskProvider =
-            TaskProvider(widget.auth, widget.logoutCallback);
+            TaskProvider(widget.logoutCallback);
         switch (index) {
           case 0:
             returnValue = CupertinoTabView(builder: (context) {
@@ -68,7 +66,6 @@ class _HomePageState extends State<HomePage> {
             returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: MarketTab(
-                  baseAuth: widget.auth,
                 ),
               );
             });
@@ -77,8 +74,6 @@ class _HomePageState extends State<HomePage> {
             returnValue = new CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                   child: ProfileTab(
-                userId: widget.userId,
-                auth: widget.auth,
                 logoutCallback: widget.logoutCallback,
                 baseTaskProvider: _taskProvider,
               ));

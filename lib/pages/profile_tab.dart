@@ -5,7 +5,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 import 'package:greenapp/models/profile.dart';
-import 'package:greenapp/services/base_auth.dart';
+
 import 'package:greenapp/services/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
@@ -17,10 +17,8 @@ const String addressAttach =
 
 class ProfileTab extends StatefulWidget {
   ProfileTab(
-      {this.userId, this.auth, this.logoutCallback, this.baseTaskProvider});
+      {this.logoutCallback, this.baseTaskProvider});
 
-  final String userId;
-  final BaseAuth auth;
   final VoidCallback logoutCallback;
   final BaseTaskProvider baseTaskProvider;
 
@@ -109,7 +107,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                                 .toString(),
                                         headers: <String, String>{
                                           'Authorization':
-                                              widget.baseTaskProvider.getAuth(),
+                                              widget.baseTaskProvider.getToken(),
                                           'X-GREEN-APP-ID': "GREEN"
                                         },
                                       ),
@@ -200,7 +198,7 @@ class _ProfileTabState extends State<ProfileTab> {
   Future<Profile> getProfile() async {
     debugPrint("Get PROFILE");
     Dio dio = new Dio();
-    dio.options.headers["Authorization"] = widget.baseTaskProvider.getAuth();
+    dio.options.headers["Authorization"] = widget.baseTaskProvider.getToken();
     dio.options.headers["x-green-app-id"] = "GREEN";
     Response response =
         await dio.get("$address${widget.baseTaskProvider.getUserId()}");
