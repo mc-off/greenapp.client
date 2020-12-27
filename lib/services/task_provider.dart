@@ -20,8 +20,7 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<int> createTask(
-      List<Object> objects, Task task) async {
+  Future<int> createTask(List<Object> objects, Task task) async {
     final user = _auth.currentUser;
     task.createdBy = user.uid;
     task.assignee = user.uid;
@@ -53,16 +52,7 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   Future<void> _setHttpProvider() async {
-    final bearerAuth = await _getAuthToken();
-    _httpTaskProvider = HttpTaskProvider(bearerAuth, logoutCallback);
-  }
-
-  Future<String> _getAuthToken() async {
-    final user =  _auth.currentUser;
-    debugPrint("User is: " + user.toString());
-    final token = await user.getIdToken();
-    this._user = user;
-    return 'Bearer ' + token;
+    _httpTaskProvider = HttpTaskProvider(logoutCallback);
   }
 
   @override
@@ -88,7 +78,7 @@ class TaskProvider implements BaseTaskProvider {
 
   String getToken() {
     String token;
-    _auth.currentUser.getIdToken().then((value) => token = value);
+    _auth.currentUser.getIdToken(false).then((value) => token = value);
     return token;
   }
 
