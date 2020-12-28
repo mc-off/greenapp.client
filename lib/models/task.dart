@@ -24,14 +24,14 @@ class Task {
   List<int> attachmentIds;
 
   //null
-  int assignee;
+  String assignee;
 
   //null
   String updated;
 
   //null
   String dueDate;
-  int createdBy;
+  String createdBy;
 
   String created;
 

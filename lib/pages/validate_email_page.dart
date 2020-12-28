@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/text-styles.dart';
 
-import 'package:greenapp/services/base_auth.dart';
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 enum _DoubleConstants {
   textFieldContainerHeight,
@@ -25,9 +26,8 @@ extension _DoubleConstantsExtension on _DoubleConstants {
 }
 
 class ValidateEmailPage extends StatefulWidget {
-  ValidateEmailPage({this.auth, this.validateCallback, this.email});
+  ValidateEmailPage({this.validateCallback, this.email});
 
-  final BaseAuth auth;
   final VoidCallback validateCallback;
   final String email;
 
@@ -69,8 +69,9 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
     if (validateAndSave()) {
       bool isValidated = false;
       try {
-        isValidated = await widget.auth
-            .sendEmailVerification(widget.email, _code.value.text);
+        final User user = _auth.currentUser;
+        _auth.applyActionCode( _code.value.text);
+        await user.sendEmailVerification();
         setState(() {
           _isLoading = false;
         });
@@ -96,18 +97,13 @@ class _ValidateEmailPageState extends State<ValidateEmailPage> {
       _infoMessage = "";
       _isLoading = true;
     });
-    bool isSended = false;
     try {
-      isSended = await widget.auth.resendEmailVerification(widget.email);
+      _auth.currentUser.sendEmailVerification();
       setState(() {
         _isLoading = false;
-      });
+        _infoMessage = "Code resended to ${widget.email}";
 
-      if (isSended) {
-        setState(() {
-          _infoMessage = "Code resended to ${widget.email}";
-        });
-      }
+      });
     } catch (e) {
       print('Error: $e');
       setState(() {

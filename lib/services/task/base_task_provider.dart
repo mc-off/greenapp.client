@@ -3,18 +3,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/models/user.dart';
 
 abstract class BaseTaskProvider {
   VoidCallback logoutCallback;
 
-  Future<List<Task>> getTasks(int lastTaskId);
+  Future<List<Task>> getTaskList(int lastTaskId, TaskStatus taskStatus,
+      String searchString, String assignee, int amount);
 
-  Future<List<Task>> getTasksNum(int lastTaskId, int amount);
-
-  Future<List<Task>> getTasksForUser(int lastTaskId, UserType userType);
-
-  Future<int> createTask(List<Object> objects, Task task, UserType userType);
+  Future<int> createTask(List<Object> objects, Task task);
 
   Future<NetworkImage> getAttachment(int attachId);
 
@@ -26,7 +22,9 @@ abstract class BaseTaskProvider {
 
   Future<bool> voteForTask(Task task, VoteChoice voteChoice);
 
-  String getAuth();
+  Future<bool> patchTaskStatus(Task task, TaskStatus taskStatus);
 
-  int getUserId();
+  String getToken();
+
+  String getUserId();
 }

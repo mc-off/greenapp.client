@@ -3,7 +3,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenapp/pages/gallery/gallery_example_item.dart';
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:photo_view/photo_view.dart';
@@ -31,12 +31,12 @@ class _GalleryExampleState extends State<GalleryExample> {
 
   initList() {
     debugPrint(widget.attachArray.length.toString());
-    debugPrint(widget.baseTaskProvider.getAuth());
+    debugPrint(widget.baseTaskProvider.getToken());
     for (int i in widget.attachArray) {
       galleryItems.add(GalleryExampleItem(
           id: i,
           resource: <String, String>{
-            'Authorization': widget.baseTaskProvider.getAuth(),
+            'Authorization': widget.baseTaskProvider.getToken(),
             'X-GREEN-APP-ID': "GREEN"
           },
           isSvg: false));
