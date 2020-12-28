@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/text-styles.dart';
 import 'package:greenapp/pages/validate_email_page.dart';
-
-
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 enum _DoubleConstants {
   textFieldContainerHeight,
@@ -84,12 +84,14 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           userId = await user.getIdToken();
           print('Signed in: $userId');
         } else {
-          await _auth.createUserWithEmailAndPassword (
-              email: _email.value.text,
-              password: _password.value.text,
-          ).then((user) {
+          await _auth
+              .createUserWithEmailAndPassword(
+            email: _email.value.text,
+            password: _password.value.text,
+          )
+              .then((user) {
             //If a user is successfully created with an appropriate email
-            if (user.user != null){
+            if (user.user != null) {
               user.user.sendEmailVerification();
             }
           });
@@ -111,6 +113,27 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           _formKey.currentState.reset();
         });
       }
+    }
+  }
+
+  void loginAnon() async {
+    setState(() {
+      _errorMessage = "";
+      _isLoading = true;
+    });
+    try {
+      final User user = (await _auth.signInAnonymously()).user;
+      setState(() {
+        _isLoading = false;
+      });
+      if (user != null && user.uid.isNotEmpty) {
+        widget.loginCallback();
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e;
+        _isLoading = true;
+      });
     }
   }
 
@@ -159,6 +182,8 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                   //showSecondNameInput(),
                   //showBirthDateInput(),
                   showPrimaryButton(),
+                  showGoogleAuthButton(),
+                  showAnonLoginButton(),
                   showSecondaryButton(),
                   showErrorMessage(),
                 ],
@@ -185,8 +210,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         context,
         CupertinoPageRoute(
             builder: (context) => ValidateEmailPage(
-                validateCallback: validateCallback,
-                email: email)));
+                validateCallback: validateCallback, email: email)));
   }
 
   void _PasswordRecoveryPage(String email) {
@@ -194,8 +218,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         context,
         CupertinoPageRoute(
             builder: (context) => ValidateEmailPage(
-                validateCallback: validateCallback,
-                email: email)));
+                validateCallback: validateCallback, email: email)));
   }
 
   void validateCallback() {
@@ -267,6 +290,27 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         ));
   }
 
+  Widget showAnonLoginButton() {
+    return _isLoginForm
+        ? new Padding(
+            padding: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 0.0),
+            child: SizedBox(
+              height: 50.0,
+              child: new CupertinoButton(
+                disabledColor: CupertinoColors.inactiveGray,
+                color: CupertinoColors.inactiveGray,
+                pressedOpacity: 0.4,
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                child: new Text('Login anon',
+                    maxLines: 1,
+                    style: new TextStyle(
+                        fontSize: 14.0, color: CupertinoColors.white)),
+                onPressed: loginAnon,
+              ),
+            ))
+        : new Container();
+  }
+
   Widget showSecondaryButton() {
     return new CupertinoButton(
         child: new Text(
@@ -308,6 +352,57 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         ),
       ),
     );
+  }
+
+  Widget showGoogleAuthButton() {
+    return _isLoginForm
+        ? new Padding(
+            padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
+            child: SizedBox(
+              height: 50.0,
+              child: new CupertinoButton.filled(
+                pressedOpacity: 0.4,
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                child: new Text('Sign in with Google',
+                    style: new TextStyle(
+                        fontSize: 18.0, color: CupertinoColors.white)),
+                onPressed: _signInWithGoogle,
+              ),
+            ))
+        : new Container();
+  }
+
+  void _signInWithGoogle() async {
+    setState(() {
+      _errorMessage = "";
+    });
+    try {
+      UserCredential userCredential;
+      if (kIsWeb) {
+        GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        userCredential = await _auth.signInWithPopup(googleProvider);
+      } else {
+        final GoogleSignInAccount googleUser =
+            await GoogleSignIn(hostedDomain: "").signIn();
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final GoogleAuthCredential googleAuthCredential =
+            GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential = await _auth.signInWithCredential(googleAuthCredential);
+      }
+
+      final user = userCredential.user;
+      if (user != null && user.uid.isNotEmpty) {
+        widget.loginCallback();
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
   }
 
   Widget showFirstNameInput() {
@@ -435,5 +530,22 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
       ),
     );
   }
-}
 
+  void displayDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => new CupertinoAlertDialog(
+        title: new Text("Error"),
+        content: new Text(_errorMessage),
+        actions: [
+          CupertinoDialogAction(
+              isDefaultAction: true,
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.pop(context, "Close");
+              })
+        ],
+      ),
+    );
+  }
+}
