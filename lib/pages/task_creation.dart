@@ -171,7 +171,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                         child: Row(
                           children: <Widget>[
                             Container(
-                                width: 200,
+                                width: 180,
                                 child: Text((_pickedLocation != null)
                                     ? _pickedLocation.address.toString()
                                     : 'Location is empty')),
@@ -193,7 +193,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                                 print("result = $result");
                                 setState(() => _pickedLocation = result);
                               },
-                              child: Text('Pick location'),
+                              child: Text('Pick loc'),
                             ),
                           ],
                         )),
