@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
-import 'package:greenapp/services/base_task_provider.dart';
-import 'package:greenapp/services/task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
+import 'package:greenapp/services/task/task_provider.dart';
 
 const String address = "https://alter-eco-api.herokuapp.com/api/attachment/";
 

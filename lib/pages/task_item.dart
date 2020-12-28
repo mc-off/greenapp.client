@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:io';
+import 'package:map_launcher/map_launcher.dart';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:enum_to_string/enum_to_string.dart';
@@ -21,7 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/pages/gallery/gallery_example.dart';
 import 'package:greenapp/pages/gallery/gallery_example_item.dart';
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:image_picker/image_picker.dart';
@@ -244,12 +245,15 @@ class _TaskItemPageState extends State<TaskItemPage> {
   }
 
   Widget _showSubTitle() {
-    return Padding(
-      padding: EdgeInsets.only(top: 3, left: 20),
-      child: Text(
-        '${widget.task.address}',
-        style: Styles.body15Regular(),
+    return GestureDetector(
+      child: Padding(
+        padding: EdgeInsets.only(top: 3, left: 20),
+        child: Text(
+          '${widget.task.address}',
+          style: Styles.body15Regular(),
+        ),
       ),
+      onTap: onCoordinateTap,
     );
   }
 
@@ -312,7 +316,8 @@ class _TaskItemPageState extends State<TaskItemPage> {
   }
 
   Widget _shoButton() {
-    if (widget.task.status == TaskStatus.CREATED) {
+    if (widget.task.status == TaskStatus.TO_DO &&
+        widget.task.createdBy != widget.baseTaskProvider.getUserId()) {
       return Padding(
           padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
           child: SizedBox(
@@ -329,8 +334,28 @@ class _TaskItemPageState extends State<TaskItemPage> {
               },
             ),
           ));
-    } else if (widget.task.status == TaskStatus.WAITING_FOR_APPROVE ||
-        widget.task.status == TaskStatus.RESOLVED)
+    } else if (widget.task.status == TaskStatus.IN_PROGRESS &&
+        widget.task.createdBy != widget.baseTaskProvider.getUserId()) {
+      return Padding(
+          padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
+          child: SizedBox(
+            height: widget.isEditable ? 50.0 : 70.0,
+            child: new CupertinoButton.filled(
+              disabledColor: CupertinoColors.quaternarySystemFill,
+              pressedOpacity: 0.4,
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              child: new Text(getButtonName(),
+                  style: new TextStyle(
+                      fontSize: 18.0, color: CupertinoColors.white)),
+              onPressed: () {
+                testUpdateTaskAttach(images);
+              },
+            ),
+          ));
+    } else if ((widget.task.status == TaskStatus.WAITING_FOR_APPROVE &&
+            widget.task.createdBy != widget.baseTaskProvider.getUserId()) ||
+        (widget.task.status == TaskStatus.RESOLVED &&
+            widget.task.assignee != widget.baseTaskProvider.getUserId()))
       return Padding(
           padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
           child: SizedBox(
@@ -379,7 +404,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
       case false:
         return "Get task for ${widget.task.reward} credits";
       case true:
-        return "Approve task";
+        return "Resolve task";
     }
   }
 
@@ -451,11 +476,34 @@ class _TaskItemPageState extends State<TaskItemPage> {
     });
   }
 
+  void onCoordinateTap() async {
+    if (Platform.isIOS) {
+      await MapLauncher.launchMap(
+        mapType: MapType.apple,
+        coords: Coords(
+            widget.task.coordinate.latitude, widget.task.coordinate.longitude),
+        title: "Marker",
+      );
+    } else {
+      await MapLauncher.launchMap(
+        mapType: MapType.google,
+        title: "Marker",
+        coords: Coords(
+            widget.task.coordinate.latitude, widget.task.coordinate.longitude),
+      );
+    }
+  }
+
   void testUpdateTaskAttach(List<Object> files) async {
     debugPrint("Perform update");
     final bool isSuccess = await widget.baseTaskProvider
         .updateTaskWithAttachments(files, widget.task);
-    if (isSuccess) {
+    bool isSuccess2 = true;
+    if (widget.task.status == TaskStatus.IN_PROGRESS)
+      widget.baseTaskProvider
+          .patchTaskStatus(widget.task, TaskStatus.RESOLVED)
+          .then((value) => isSuccess2 = value);
+    if (isSuccess && isSuccess2) {
       widget.callback();
     }
   }

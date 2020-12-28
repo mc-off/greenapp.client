@@ -7,11 +7,8 @@ import 'package:greenapp/models/task.dart';
 abstract class BaseTaskProvider {
   VoidCallback logoutCallback;
 
-  Future<List<Task>> getTasks(int lastTaskId);
-
-  Future<List<Task>> getTasksNum(int lastTaskId, int amount);
-
-  Future<List<Task>> getTasksForUser(int lastTaskId);
+  Future<List<Task>> getTaskList(int lastTaskId, TaskStatus taskStatus,
+      String searchString, String assignee, int amount);
 
   Future<int> createTask(List<Object> objects, Task task);
 
@@ -24,6 +21,8 @@ abstract class BaseTaskProvider {
   Future<bool> updateTaskWithAttachments(List<Object> objects, Task task);
 
   Future<bool> voteForTask(Task task, VoteChoice voteChoice);
+
+  Future<bool> patchTaskStatus(Task task, TaskStatus taskStatus);
 
   String getToken();
 

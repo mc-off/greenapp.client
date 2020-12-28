@@ -3,7 +3,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenapp/pages/gallery/gallery_example_item.dart';
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:photo_view/photo_view.dart';

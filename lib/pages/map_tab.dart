@@ -7,11 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/pages/task_item.dart';
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/converters.dart';
 import 'package:location/location.dart';
 
-final int INITIAL_ID_FOR_TASKS = 800;
+final int INITIAL_ID_FOR_TASKS = 950;
 
 class MapTab extends StatefulWidget {
   MapTab({this.baseTaskProvider});
@@ -116,8 +116,16 @@ class _MapTabState extends State<MapTab> {
   Map<String, Marker> _markers = {};
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    final taskList =
-        await widget.baseTaskProvider.getTasksNum(INITIAL_ID_FOR_TASKS, 300);
+    // List<Task> taskListForUser;
+    // try {
+    //   taskListForUser = await widget.baseTaskProvider.getAllTasksForUser(2000);
+    //   print('Array size:');
+    //   print(taskListForUser.length);
+    // } catch (e) {
+    //   taskListForUser = null;
+    // }
+    final taskList = await widget.baseTaskProvider
+        .getTaskList(null, TaskStatus.TO_DO, null, null, 300);
     _markers.clear();
     getCurrentLocation();
     for (final task in taskList) {
