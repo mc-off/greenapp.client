@@ -2,12 +2,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/pages/market_tab.dart';
-import 'package:greenapp/pages/task_creation.dart';
-import 'package:greenapp/pages/task_item.dart';
-import 'package:greenapp/pages/task_list.dart';
 import 'package:greenapp/services/shop/base_shop_provider.dart';
-
-import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 
