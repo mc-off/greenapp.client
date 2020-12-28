@@ -7,6 +7,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 import 'package:greenapp/models/balance.dart';
 import 'package:greenapp/models/profile.dart';
+import 'package:greenapp/pages/purchased_items_page.dart';
+import 'package:greenapp/pages/tasks_completed_page.dart';
 import 'package:greenapp/services/shop/base_shop_provider.dart';
 
 import 'package:greenapp/services/task/base_task_provider.dart';
@@ -45,23 +47,6 @@ class _ProfileTabState extends State<ProfileTab> {
     return CustomScrollView(semanticChildCount: 1, slivers: <Widget>[
       CupertinoSliverNavigationBar(
         largeTitle: Text('Profile'),
-        trailing: GestureDetector(
-          child: Padding(
-            padding: EdgeInsets.only(top: 10.0),
-            child: Text(
-              "Edit",
-              style: TextStyle(
-                color: CupertinoColors.activeBlue,
-                fontSize: 18.0,
-              ),
-            ),
-          ),
-          onTap: () {
-            setState(() {
-              _isEditEnabled = !_isEditEnabled;
-            });
-          },
-        ),
       ),
       SliverList(
         delegate: SliverChildListDelegate(
@@ -217,37 +202,23 @@ class _ProfileTabState extends State<ProfileTab> {
                 },
               ),
             )),
-            const CSHeader('Brightness'),
-            CSWidget(CupertinoSlider(value: 0.5), style: brightnessStyle),
-            CSControl(
-              nameWidget: Text('Auto brightness'),
-              contentWidget: CupertinoSwitch(value: true),
-              style: brightnessStyle,
-            ),
-            CSHeader('Selection'),
-            CSSelection<int>(
-              items: const <CSSelectionItem<int>>[
-                CSSelectionItem<int>(text: 'Day mode', value: 0),
-                CSSelectionItem<int>(text: 'Night mode', value: 1),
-              ],
-              onSelected: (index) {
-                print(index);
-              },
-              currentSelection: 0,
-            ),
-            CSDescription(
-              'Using Night mode extends battery life on devices with OLED display',
-            ),
-            const CSHeader(''),
-            CSControl(
-              nameWidget: Text('Loading...'),
-              contentWidget: CupertinoActivityIndicator(),
-            ),
-            CSButton(CSButtonType.DEFAULT, "Licenses", () {
-              print("It works!");
+            const CSHeader('Rewards'),
+            CSButton(CSButtonType.DEFAULT, "Completed tasks", () {
+              Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (context) => TasksCompletedPage(
+                            baseTaskProvider: widget.baseTaskProvider,
+                          )));
             }),
-            const CSHeader(''),
-            CSButton(CSButtonType.DESTRUCTIVE, "Delete all data", () {}),
+            CSButton(CSButtonType.DEFAULT, "Completed orders", () {
+              Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (context) => PurchasedItemsPage(
+                            baseShopProvider: widget.baseShopProvider,
+                          )));
+            }),
             const CSHeader('Session'),
             CSButton(CSButtonType.DESTRUCTIVE, "Sign out", () {
               signOut();
