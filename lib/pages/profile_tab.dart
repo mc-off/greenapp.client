@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
 import 'package:greenapp/models/balance.dart';
 import 'package:greenapp/models/profile.dart';
-import 'package:greenapp/pages/purchased_items_page.dart';
+import 'package:greenapp/pages/purchased_Items_page.dart';
 import 'package:greenapp/pages/tasks_completed_page.dart';
 import 'package:greenapp/services/shop/base_shop_provider.dart';
 
