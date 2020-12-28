@@ -182,7 +182,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                   //showSecondNameInput(),
                   //showBirthDateInput(),
                   showPrimaryButton(),
-                  showGoogleAuthButton(),
+                  // showGoogleAuthButton(),
                   showAnonLoginButton(),
                   showSecondaryButton(),
                   showErrorMessage(),

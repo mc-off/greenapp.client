@@ -238,7 +238,7 @@ class _TaskItemPageState extends State<TaskItemPage> {
     return Padding(
       padding: EdgeInsets.only(left: 20, top: 8),
       child: Text(
-        '${widget.task.title}' + ' ID:' + '${widget.task.id}',
+        '${widget.task.title}',
         style: Styles.body17Medium(),
       ),
     );
