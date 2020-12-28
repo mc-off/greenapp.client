@@ -2,25 +2,30 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_cupertino_settings/flutter_cupertino_settings.dart';
+import 'package:greenapp/models/balance.dart';
 import 'package:greenapp/models/profile.dart';
+import 'package:greenapp/services/shop/base_shop_provider.dart';
 
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 
-const String address =
-    "https://greenapp-client-provider.herokuapp.com/client-provider/client/";
-const String addressAttach =
-    "https://greenapp-client-provider.herokuapp.com/client-provider/attachment/";
+final FirebaseAuth _auth = FirebaseAuth.instance;
+// const String address =
+//     "https://greenapp-client-provider.herokuapp.com/client-provider/client/";
+// const String addressAttach =
+//     "https://greenapp-client-provider.herokuapp.com/client-provider/attachment/";
 
 class ProfileTab extends StatefulWidget {
   ProfileTab(
-      {this.logoutCallback, this.baseTaskProvider});
+      {this.logoutCallback, this.baseTaskProvider, this.baseShopProvider});
 
   final VoidCallback logoutCallback;
   final BaseTaskProvider baseTaskProvider;
+  final BaseShopProvider baseShopProvider;
 
   @override
   _ProfileTabState createState() {
@@ -98,30 +103,32 @@ class _ProfileTabState extends State<ProfileTab> {
                                   projectSnapshot.data.description != null
                                       ? projectSnapshot.data.description
                                       : '';
-                              _image = (projectSnapshot.data.attachmentId !=
-                                      null)
-                                  ? Image(
-                                      image: NetworkImage(
-                                        addressAttach +
-                                            projectSnapshot.data.attachmentId
-                                                .toString(),
-                                        headers: <String, String>{
-                                          'Authorization':
-                                              widget.baseTaskProvider.getToken(),
-                                          'X-GREEN-APP-ID': "GREEN"
-                                        },
-                                      ),
-                                      height: 70,
-                                      width: 70,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image(
-                                      image: AssetImage(
-                                          "assets/no_image_available.png"),
-                                      width: 70,
-                                      height: 70,
-                                      fit: BoxFit.cover,
-                                    );
+                              // _image = (projectSnapshot.data.attachmentId !=
+                              //         null)
+                              //     ? Image(
+                              //         image: NetworkImage(
+                              //           addressAttach +
+                              //               projectSnapshot.data.attachmentId
+                              //                   .toString(),
+                              //           headers: <String, String>{
+                              //             'Authorization':
+                              //                 widget.baseTaskProvider.getToken(),
+                              //             'X-GREEN-APP-ID': "GREEN"
+                              //           },
+                              //         ),
+                              //         height: 70,
+                              //         width: 70,
+                              //         fit: BoxFit.cover,
+                              //       )
+                              //     :
+                              _image = Image(
+                                image:
+                                    AssetImage("assets/no_image_available.png"),
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              );
+                              _auth.currentUser.photoUrl;
                               return Row(
                                 children: <Widget>[
                                   Padding(
@@ -177,10 +184,75 @@ class _ProfileTabState extends State<ProfileTab> {
                         ],
                       )),
             Row(children: <Widget>[ClipOval()]),
+            const CSHeader('Balance'),
+            CSWidget(Container(
+              height: 60,
+              alignment: Alignment.centerLeft,
+              color: CupertinoColors.white,
+              child: FutureBuilder(
+                future: widget.baseShopProvider.getBalance(),
+                builder: (context, projectSnapshot) {
+                  debugPrint(
+                      EnumToString.parse(projectSnapshot.connectionState));
+                  switch (projectSnapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return _showCircularProgress();
+                    case ConnectionState.done:
+                      {
+                        return (projectSnapshot.data != null)
+                            ? Text(projectSnapshot.data.amount.toString(),
+                                style: new TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                ))
+                            : Text('0',
+                                style: new TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                ));
+                      }
+                    default:
+                      return _showCircularProgress();
+                  }
+                },
+              ),
+            )),
+            const CSHeader('Brightness'),
+            CSWidget(CupertinoSlider(value: 0.5), style: brightnessStyle),
+            CSControl(
+              nameWidget: Text('Auto brightness'),
+              contentWidget: CupertinoSwitch(value: true),
+              style: brightnessStyle,
+            ),
+            CSHeader('Selection'),
+            CSSelection<int>(
+              items: const <CSSelectionItem<int>>[
+                CSSelectionItem<int>(text: 'Day mode', value: 0),
+                CSSelectionItem<int>(text: 'Night mode', value: 1),
+              ],
+              onSelected: (index) {
+                print(index);
+              },
+              currentSelection: 0,
+            ),
+            CSDescription(
+              'Using Night mode extends battery life on devices with OLED display',
+            ),
+            const CSHeader(''),
+            CSControl(
+              nameWidget: Text('Loading...'),
+              contentWidget: CupertinoActivityIndicator(),
+            ),
+            CSButton(CSButtonType.DEFAULT, "Licenses", () {
+              print("It works!");
+            }),
+            const CSHeader(''),
+            CSButton(CSButtonType.DESTRUCTIVE, "Delete all data", () {}),
             const CSHeader('Session'),
             CSButton(CSButtonType.DESTRUCTIVE, "Sign out", () {
               signOut();
-            })
+            }),
+            Padding(padding: EdgeInsets.only(bottom: 50))
           ],
         ),
       ),
@@ -196,31 +268,15 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   Future<Profile> getProfile() async {
-    debugPrint("Get PROFILE");
-    Dio dio = new Dio();
-    dio.options.headers["Authorization"] = widget.baseTaskProvider.getToken();
-    dio.options.headers["x-green-app-id"] = "GREEN";
-    Response response =
-        await dio.get("$address${widget.baseTaskProvider.getUserId()}");
-    if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
-      debugPrint("PROFILE GETTER OK");
-      debugPrint(response.statusCode.toString());
+    Profile profile = new Profile();
+    User user = _auth.currentUser;
+    profile.name = user.email;
+    profile.description = user.uid;
+    return profile;
+  }
 
-      Profile profile = Profile.fromJson(response.data);
-      debugPrint(profile.toJson().toString());
-      return profile;
-    } else {
-      // If the server did no
-      //t return a 201 CREATED response,
-      // then throw an exception
-      debugPrint("PROFILE GETTER ERROR");
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.data.toString());
-      if (response.statusCode == 401) widget.logoutCallback();
-      throw Exception('Failed to parse tasks');
-    }
+  Future<Balance> getBalance() async {
+    widget.baseShopProvider.getBalance();
   }
 
   Widget _showSubTitle(String text) {

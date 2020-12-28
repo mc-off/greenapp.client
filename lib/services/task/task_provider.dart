@@ -4,8 +4,9 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/services/base_task_provider.dart';
-import 'package:greenapp/services/http_task_provider.dart';
+import 'package:greenapp/pages/tasks_tab.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
+import 'package:greenapp/services/task/http_task_provider.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -21,9 +22,9 @@ class TaskProvider implements BaseTaskProvider {
   @override
   Future<int> createTask(List<Object> objects, Task task) async {
     final user = _auth.currentUser;
-    task.createdBy = user.uid;
-    task.assignee = user.uid;
-    debugPrint("Set user id: " + user.uid);
+    task.createdBy = getUserId();
+    task.assignee = null;
+    debugPrint("Set user id: " + getUserId());
     return _httpTaskProvider.createTask(objects, task);
   }
 
@@ -33,15 +34,10 @@ class TaskProvider implements BaseTaskProvider {
   }
 
   @override
-  Future<List<Task>> getTasks(int lastTaskId) {
-    return _httpTaskProvider.getCreatedTaskList(lastTaskId);
-  }
-
-  @override
-  Future<List<Task>> getTasksForUser(int lastTaskId) async {
-    final user = _auth.currentUser;
-    debugPrint("Set user id: " + user.uid);
-    return _httpTaskProvider.getTasksForCurrentUser(lastTaskId, user.uid);
+  Future<List<Task>> getTaskList(int lastTaskId, TaskStatus taskStatus,
+      String searchString, String assignee, int amount) {
+    return _httpTaskProvider.getTaskList(
+        lastTaskId, taskStatus, searchString, assignee, amount);
   }
 
   @override
@@ -51,11 +47,6 @@ class TaskProvider implements BaseTaskProvider {
 
   Future<void> _setHttpProvider() async {
     _httpTaskProvider = HttpTaskProvider(logoutCallback);
-  }
-
-  @override
-  Future<List<Task>> getTasksNum(int lastTaskId, int amount) {
-    return _httpTaskProvider.getTasksAmount(lastTaskId, amount);
   }
 
   @override
@@ -70,11 +61,17 @@ class TaskProvider implements BaseTaskProvider {
     return _httpTaskProvider.updateTaskWithAttachments(objects, task);
   }
 
-  Future<bool> voteForTask(Task task, VoteChoice voteChoice) {
-    return _httpTaskProvider.voteForTask(
-        task, voteChoice, _auth.currentUser.uid);
+  @override
+  Future<bool> patchTaskStatus(Task task, TaskStatus taskStatus) {
+    return _httpTaskProvider.patchTaskStatus(task, taskStatus);
   }
 
+  @override
+  Future<bool> voteForTask(Task task, VoteChoice voteChoice) {
+    return _httpTaskProvider.voteForTask(task, voteChoice);
+  }
+
+  @override
   String getToken() {
     String token;
     _auth.currentUser.getIdToken(false).then((value) => token = value);

@@ -1,27 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'product.dart';
+part of 'item.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Product _$ProductFromJson(Map<String, dynamic> json) {
-  return Product(
+Item _$ItemFromJson(Map<String, dynamic> json) {
+  return Item(
     amount: json['amount'] as int,
-    createdBy: json['createdBy'] as int,
-    createdWhen: json['createdWhen'] as int,
+    createdBy: json['createdBy'] as String,
     description: json['description'] as String,
-    headerPhoto: json['headerPhoto'] as String,
+    attachmentIds:
+        (json['attachmentIds'] as List)?.map((e) => e as int)?.toList(),
+    type: _$enumDecodeNullable(_$ItemTypeEnumMap, json['type']),
     id: json['id'] as int,
-    lastUpdated: json['lastUpdated'] as int,
     price: json['price'] as int,
-    status: _$enumDecodeNullable(_$ProductStatusEnumMap, json['status']),
     title: json['title'] as String,
   );
 }
 
-Map<String, dynamic> _$ProductToJson(Product instance) {
+Map<String, dynamic> _$ItemToJson(Item instance) {
   final val = <String, dynamic>{};
 
   void writeNotNull(String key, dynamic value) {
@@ -32,13 +31,11 @@ Map<String, dynamic> _$ProductToJson(Product instance) {
 
   writeNotNull('amount', instance.amount);
   writeNotNull('createdBy', instance.createdBy);
-  writeNotNull('createdWhen', instance.createdWhen);
   writeNotNull('description', instance.description);
-  writeNotNull('headerPhoto', instance.headerPhoto);
+  writeNotNull('attachmentIds', instance.attachmentIds);
+  writeNotNull('type', _$ItemTypeEnumMap[instance.type]);
   writeNotNull('id', instance.id);
-  writeNotNull('lastUpdated', instance.lastUpdated);
   writeNotNull('price', instance.price);
-  writeNotNull('status', _$ProductStatusEnumMap[instance.status]);
   writeNotNull('title', instance.title);
   return val;
 }
@@ -75,7 +72,9 @@ T _$enumDecodeNullable<T>(
   return _$enumDecode<T>(enumValues, source, unknownValue: unknownValue);
 }
 
-const _$ProductStatusEnumMap = {
-  ProductStatus.SOLD: 'SOLD',
-  ProductStatus.AVAILABLE: 'AVAILABLE',
+const _$ItemTypeEnumMap = {
+  ItemType.TECH: 'TECH',
+  ItemType.SALE: 'SALE',
+  ItemType.COUPON: 'COUPON',
+  ItemType.OTHER: 'OTHER',
 };
