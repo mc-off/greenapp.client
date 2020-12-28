@@ -4,25 +4,23 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenapp/models/task.dart';
-import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/task_creation.dart';
 import 'package:greenapp/pages/task_item.dart';
 import 'package:greenapp/pages/task_list.dart';
-import 'package:greenapp/services/base_auth.dart';
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/pages/tasks_vote_page.dart';
+
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
-final int INITIAL_ID_FOR_TASKS = 0;
+final int INITIAL_ID_FOR_TASKS = 990;
 
 class TasksTab extends StatefulWidget {
-  TasksTab({this.baseTaskProvider, this.baseAuth});
+  TasksTab({this.baseTaskProvider});
 
   @required
   final BaseTaskProvider baseTaskProvider;
-  @required
-  final BaseAuth baseAuth;
 
   @override
   _TasksTabState createState() {
@@ -32,7 +30,7 @@ class TasksTab extends StatefulWidget {
 
 class _TasksTabState extends State<TasksTab> {
   int theriGroupVakue = 0;
-  TaskStatus segmentValue = TaskStatus.CREATED;
+  TaskStatus segmentValue = TaskStatus.TO_DO;
 
   final Map<int, Widget> logoWidgets = const <int, Widget>{
     0: Text("Available"),
@@ -122,8 +120,8 @@ class _TasksTabState extends State<TasksTab> {
                   showCupertinoModalPopup(
                     context: context,
                     builder: (BuildContext context) => CupertinoActionSheet(
-                        title: const Text('Choose Options'),
-                        message: const Text('Your options are '),
+                        title: const Text('Extra features'),
+                        message: const Text('Your options are'),
                         actions: <Widget>[
                           CupertinoActionSheetAction(
                             child: const Text('Get task by id DEMO'),
@@ -132,9 +130,16 @@ class _TasksTabState extends State<TasksTab> {
                             },
                           ),
                           CupertinoActionSheetAction(
-                            child: const Text('Vote for tasks DEMO'),
+                            child: const Text('Vote for tasks'),
                             onPressed: () {
-                              Navigator.pop(context, 'Vote for tasks DEMO');
+                              Navigator.pop(context, 'Vote for tasks');
+                              Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                      builder: (context) => TasksVotePage(
+                                            baseTaskProvider:
+                                                widget.baseTaskProvider,
+                                          )));
                             },
                           )
                         ],
@@ -171,13 +176,13 @@ class _TasksTabState extends State<TasksTab> {
                               theriGroupVakue = changeFromGroupValue;
                               switch (changeFromGroupValue) {
                                 case 0:
-                                  segmentValue = TaskStatus.CREATED;
+                                  segmentValue = TaskStatus.TO_DO;
                                   break;
                                 case 1:
                                   segmentValue = TaskStatus.IN_PROGRESS;
                                   break;
                                 default:
-                                  segmentValue = TaskStatus.CREATED;
+                                  segmentValue = TaskStatus.TO_DO;
                                   break;
                               }
                             });
@@ -195,10 +200,8 @@ class _TasksTabState extends State<TasksTab> {
           ];
         },
         body: FutureBuilder(
-            future: (segmentValue == TaskStatus.CREATED)
-                ? widget.baseTaskProvider.getTasks(INITIAL_ID_FOR_TASKS)
-                : widget.baseTaskProvider
-                    .getTasksForUser(INITIAL_ID_FOR_TASKS, UserType.LOCAL),
+            future: widget.baseTaskProvider
+                .getTaskList(null, segmentValue, null, null, 10),
             builder: (context, projectSnapshot) {
               debugPrint(EnumToString.parse(projectSnapshot.connectionState));
               if (projectSnapshot.hasError)

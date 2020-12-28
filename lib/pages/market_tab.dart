@@ -1,22 +1,28 @@
 import 'dart:convert';
 
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:greenapp/models/item.dart';
 import 'package:greenapp/models/text-styles.dart';
 import 'package:greenapp/models/unit.dart';
 import 'package:greenapp/pages/gallery/galery_example2.dart';
 import 'package:greenapp/pages/gallery/gallery_example.dart';
-import 'package:greenapp/services/base_auth.dart';
+import 'package:greenapp/services/shop/base_shop_provider.dart';
+
 import 'package:greenapp/utils/styles.dart';
 import 'package:greenapp/widgets/placeholder_content.dart';
 import 'package:http/http.dart' as http;
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class MarketTab extends StatefulWidget {
-  MarketTab({this.baseAuth, this.logoutCallback});
+  MarketTab({this.baseShopProvider, this.logoutCallback});
 
   @required
-  final BaseAuth baseAuth;
+  final BaseShopProvider baseShopProvider;
+  @required
   final VoidCallback logoutCallback;
 
   @override
@@ -33,11 +39,21 @@ class _MarketTabState extends State<MarketTab> {
           return <Widget>[
             CupertinoSliverNavigationBar(
               largeTitle: Text('Market'),
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  setState(() {});
+                },
+                child: const Icon(
+                  CupertinoIcons.arrow_clockwise,
+                  semanticLabel: 'VoteToReload',
+                ),
+              ),
             )
           ];
         },
         body: FutureBuilder(
-            future: getUnitList(),
+            future: widget.baseShopProvider.getItems(),
             builder: (context, projectSnapshot) {
               debugPrint(EnumToString.parse(projectSnapshot.connectionState));
               if (projectSnapshot.hasError)
@@ -67,7 +83,9 @@ class _MarketTabState extends State<MarketTab> {
                                             context,
                                             CupertinoPageRoute(
                                                 builder: (context) => UnitItem(
-                                                      unit: projectSnapshot
+                                                      baseShopProvider: widget
+                                                          .baseShopProvider,
+                                                      item: projectSnapshot
                                                           .data[index],
                                                     )));
                                       },
@@ -104,39 +122,39 @@ class _MarketTabState extends State<MarketTab> {
     return Center(child: CupertinoActivityIndicator());
   }
 
-  Future<List<Unit>> getUnitList() async {
-    final token = await widget.baseAuth.getCurrentUser();
-    debugPrint(token.toString());
-    debugPrint("getTasksList");
-    http.Response response = await http.get(
-      "https://greenapp-gateway.herokuapp.com/shop/load/all",
-      headers: <String, String>{
-        'Authorization': "Bearer " + token.toString(),
-        'Content-type': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body.toString());
-      final t = json.decode(response.body);
-      List<Unit> unitList = [];
-      for (Map i in t) {
-        unitList.add(Unit.fromJson(i));
-      }
-
-      return unitList;
-    } else {
-      // If the server did no
-      //t return a 201 CREATED response,
-      // then throw an exception
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body.toString());
-      if (response.statusCode == 401) widget.logoutCallback();
-      throw Exception('Failed to parse tasks');
-    }
-  }
+  // Future<List<Unit>> getUnitList() async {
+  //   final token = await _auth.currentUser.getIdToken();
+  //   debugPrint(token.toString());
+  //   debugPrint("getTasksList");
+  //   http.Response response = await http.get(
+  //     "https://greenapp-gateway.herokuapp.com/shop/load/all",
+  //     headers: <String, String>{
+  //       'Authorization': "Bearer " + token.toString(),
+  //       'Content-type': 'application/json',
+  //     },
+  //   );
+  //   if (response.statusCode == 200) {
+  //     // If the server did return a 201 CREATED response,
+  //     // then parse the JSON.
+  //     debugPrint(response.statusCode.toString());
+  //     debugPrint(response.body.toString());
+  //     final t = json.decode(response.body);
+  //     List<Unit> unitList = [];
+  //     for (Map i in t) {
+  //       unitList.add(Unit.fromJson(i));
+  //     }
+  //
+  //     return unitList;
+  //   } else {
+  //     // If the server did no
+  //     //t return a 201 CREATED response,
+  //     // then throw an exception
+  //     debugPrint(response.statusCode.toString());
+  //     debugPrint(response.body.toString());
+  //     if (response.statusCode == 401) widget.logoutCallback();
+  //     throw Exception('Failed to parse tasks');
+  //   }
+  // }
 }
 
 class UnitRowItem extends StatelessWidget {
@@ -145,7 +163,7 @@ class UnitRowItem extends StatelessWidget {
     this.unit,
   });
 
-  final Unit unit;
+  final Item unit;
   final bool isLastIndex;
 
   @override
@@ -228,10 +246,14 @@ class UnitRowItem extends StatelessWidget {
 
 class UnitItem extends StatefulWidget {
   const UnitItem({
-    this.unit,
+    this.baseShopProvider,
+    this.item,
   });
 
-  final Unit unit;
+  @required
+  final BaseShopProvider baseShopProvider;
+
+  final Item item;
 
   @override
   _UnitItemState createState() => _UnitItemState();
@@ -272,7 +294,7 @@ class _UnitItemState extends State<UnitItem> {
     return Padding(
       padding: EdgeInsets.only(left: 20, top: 8),
       child: Text(
-        '${widget.unit.title}',
+        '${widget.item.title}',
         style: Styles.body17Medium(),
       ),
     );
@@ -282,7 +304,7 @@ class _UnitItemState extends State<UnitItem> {
     return Padding(
       padding: EdgeInsets.only(top: 3, left: 20),
       child: Text(
-        '${widget.unit.description}',
+        '${widget.item.description}',
         style: Styles.body15Regular(),
       ),
     );
@@ -292,7 +314,7 @@ class _UnitItemState extends State<UnitItem> {
     return Padding(
       padding: EdgeInsets.only(top: 10, left: 20),
       child: Text(
-        '${widget.unit.createdBy}',
+        '${widget.item.createdBy}',
         style: Styles.body15RegularGray(),
       ),
     );
@@ -303,13 +325,23 @@ class _UnitItemState extends State<UnitItem> {
         padding: EdgeInsets.fromLTRB(40.0, 30.0, 40.0, 0.0),
         child: SizedBox(
           height: 50.0,
-          child: new CupertinoButton.filled(
+          child: CupertinoButton.filled(
+            padding: EdgeInsets.fromLTRB(48, 8, 48, 8),
             disabledColor: CupertinoColors.quaternarySystemFill,
             pressedOpacity: 0.4,
             borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-            child: new Text('Buy for ${widget.unit.price} DEMO',
-                style: new TextStyle(
-                    fontSize: 18.0, color: CupertinoColors.white)),
+            child: Column(children: [
+              Text('Buy for',
+                  style: new TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 13,
+                      color: CupertinoColors.white)),
+              Text('${widget.item.price}',
+                  style: new TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: CupertinoColors.white))
+            ]),
             onPressed: testRequest,
           ),
         ));
@@ -333,5 +365,7 @@ class _UnitItemState extends State<UnitItem> {
 
   int getPicNumber() {}
 
-  void testRequest() {}
+  void testRequest() {
+    widget.baseShopProvider.purchaseItem(widget.item.id);
+  }
 }

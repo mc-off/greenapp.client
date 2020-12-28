@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -17,32 +18,26 @@ import 'package:google_map_location_picker/google_map_location_picker.dart'
 
 import 'package:http/http.dart' as http;
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class HttpTaskProvider {
-  final String _bearerAuth;
   final VoidCallback logoutCallback;
 
-  HttpTaskProvider(this._bearerAuth, this.logoutCallback);
+  final fullTaskUrl = "https://alter-eco-api.herokuapp.com/api/";
 
-  Future<List<Task>> getCreatedTaskList(int lastTaskId) async {
-    return _getTaskList(lastTaskId, TaskStatus.CREATED, "", null, 10);
-  }
+  final taskUrl = "alter-eco-api.herokuapp.com";
 
-  Future<List<Task>> getTasksForCurrentUser(int lastTaskId, int userId) async {
-    return _getTaskList(lastTaskId, TaskStatus.CREATED, "", userId, 10);
-  }
+  final taskPostfix = "/api";
 
-  Future<List<Task>> getTasksAmount(int lastTaskId, int amount) async {
-    return _getTaskList(lastTaskId, TaskStatus.CREATED, "", null, amount);
-  }
+  HttpTaskProvider(this.logoutCallback);
 
   Future<int> createTask(List<Object> objects, Task task) async {
-    var uri =
-        Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task');
+    var uri = Uri.https(taskUrl, taskPostfix + '/task');
 
     debugPrint('Create: ' + json.encode(task));
 
     final dio.Dio dioClient = new dio.Dio();
-    dioClient.options.headers["Authorization"] = _bearerAuth;
+    dioClient.options.headers["Authorization"] = _getCurrentToken();
     //dioClient.options.contentType = "multipart/form-data";
     debugPrint("Object amount: " + objects.length.toString());
     List<File> fileList = new List<File>();
@@ -100,13 +95,12 @@ class HttpTaskProvider {
     var queryParameters = {
       'detach': false.toString(),
     };
-    var uri = Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task',
-        queryParameters);
+    var uri = Uri.https(taskUrl, taskPostfix + '/task', queryParameters);
 
     debugPrint('Update task: ' + json.encode(task));
 
     final dio.Dio dioClient = new dio.Dio();
-    dioClient.options.headers["Authorization"] = _bearerAuth;
+    dioClient.options.headers["Authorization"] = _getCurrentToken();
     //dioClient.options.contentType = "multipart/form-data";
     debugPrint("Object amount: " + objects.length.toString());
     List<File> fileList = new List<File>();
@@ -190,28 +184,27 @@ class HttpTaskProvider {
 //      throw Exception('Failed to parse tasks');
 //    }
 //  }
-
-  Future<List<Task>> _getTaskList(int lastTaskId, TaskStatus taskStatus,
-      String searchString, int assignee, int amount) async {
+  Future<List<Task>> _getTaskListWithoutStatus(
+      int lastTaskId, String searchString, String assignee, int amount) async {
     debugPrint("getTasksList");
     debugPrint("lastTaskId " + lastTaskId.toString());
-    debugPrint(_bearerAuth);
     Map body = ({
-      'status': EnumToString.parse(taskStatus),
       "limit": amount,
       "offset": lastTaskId,
       "searchString": searchString,
+      "sort": ['CREATED_DESC']
     });
-    if (assignee != null) {
+    if (assignee != null && assignee.isNotEmpty) {
       body.addAll(({"assignee": assignee}));
     }
+    final headers = <String, String>{
+      'Authorization': await _getCurrentToken(),
+      'Content-type': 'application/json',
+    };
     debugPrint(body.toString());
     http.Response response = await http.post(
-      "https://greenapp-gateway.herokuapp.com/task-provider/tasks",
-      headers: <String, String>{
-        'Authorization': _bearerAuth,
-        'Content-type': 'application/json',
-      },
+      fullTaskUrl + "/tasks",
+      headers: headers,
       body: json.encode(body),
     );
     if (response.statusCode == 200) {
@@ -233,6 +226,56 @@ class HttpTaskProvider {
       // then throw an exception
       debugPrint(response.statusCode.toString());
       debugPrint(response.body.toString());
+      //if (response.statusCode == 401) logoutCallback();
+      throw Exception('Failed to parse tasks');
+    }
+  }
+
+  Future<List<Task>> getTaskList(int lastTaskId, TaskStatus taskStatus,
+      String searchString, String assignee, int amount) async {
+    debugPrint("getTasksList");
+    debugPrint("lastTaskId " + lastTaskId.toString());
+    Map body = ({
+      'status': EnumToString.parse(taskStatus),
+      "limit": amount,
+      "offset": lastTaskId,
+      "searchString": searchString,
+      "sort": ['CREATED_DESC']
+    });
+    if (assignee != null && assignee.isNotEmpty) {
+      body.addAll(({"assignee": assignee}));
+    }
+    final headers = <String, String>{
+      'Authorization': await _getCurrentToken(),
+      'Content-type': 'application/json',
+    };
+    debugPrint(body.toString());
+    http.Response response = await http.post(
+      fullTaskUrl + "/tasks",
+      headers: headers,
+      body: json.encode(body),
+    );
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body.toString());
+      final t = json.decode(response.body);
+      List<Task> taskList = [];
+      for (Map i in t) {
+        debugPrint(i.toString());
+        taskList.add(Task.fromJson(i));
+      }
+      try {
+        debugPrint(EnumToString.parse(taskList.first.status));
+      } catch (e) {}
+      return taskList;
+    } else {
+      // If the server did no
+      //t return a 201 CREATED response,
+      // then throw an exception
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.body.toString());
       if (response.statusCode == 401) logoutCallback();
       throw Exception('Failed to parse tasks');
     }
@@ -242,10 +285,9 @@ class HttpTaskProvider {
     var queryParameters = {
       'detach': true.toString(),
     };
-    var uri = Uri.https('greenapp-gateway.herokuapp.com', '/task-provider/task',
-        queryParameters);
+    var uri = Uri.https(taskUrl, taskPostfix + '/task', queryParameters);
 
-    task.assignee = 1;
+    //task.assignee = 'ybhM9WhJfXQJ5tMmDWGJRhZyk272';
 
     debugPrint('Update: ' + json.encode(task));
 
@@ -255,7 +297,7 @@ class HttpTaskProvider {
         'task',
         new dio.MultipartFile.fromString(json.encode(task),
             contentType: MediaType('application', 'json'))));
-    dioClient.options.headers["Authorization"] = _bearerAuth;
+    dioClient.options.headers["Authorization"] = _getCurrentToken();
     final dio.Response response = await dioClient.putUri(uri, data: formData);
     if (response.statusCode == 200) {
       debugPrint(response.statusCode.toString());
@@ -270,9 +312,9 @@ class HttpTaskProvider {
 
   Future<Task> getTask(int id) async {
     http.Response response = await http.get(
-      "https://greenapp-gateway.herokuapp.com/task-provider/task/$id",
+      fullTaskUrl + "/task/$id",
       headers: <String, String>{
-        'Authorization': _bearerAuth,
+        'Authorization': await _getCurrentToken(),
       },
     );
     if (response.statusCode == 200) {
@@ -287,10 +329,14 @@ class HttpTaskProvider {
       Task task = Task.fromJson(jsonDecode(response.body));
       final coordinates =
           new Coordinates(task.coordinate.latitude, task.coordinate.longitude);
-      var addresses =
-          await Geocoder.local.findAddressesFromCoordinates(coordinates);
-      var first = addresses.first;
-      task.address = first.locality!=null ? first.featureName + ' ' + first.locality : first.featureName;
+      try {
+        var addresses =
+            await Geocoder.local.findAddressesFromCoordinates(coordinates);
+        var first = addresses.first;
+        task.address = first.locality != null
+            ? first.featureName + ' ' + first.locality
+            : first.featureName;
+      } catch (e) {}
       return task;
     } else {
       // If the server did no
@@ -304,47 +350,59 @@ class HttpTaskProvider {
   }
 
   Future<NetworkImage> getAttachment(int id) async {
-    final t = NetworkImage(
-        "https://greenapp-gateway.herokuapp.com/task-provider/attachment/$id",
-        headers: <String, String>{
-          'Authorization': _bearerAuth,
-        });
+    final t =
+        NetworkImage(fullTaskUrl + "/attachment/$id", headers: <String, String>{
+      'Authorization': await _getCurrentToken(),
+    });
     return t;
   }
 
-  Future<bool> voteForTask(
-      Task task, VoteChoice voteChoice, int clientId) async {
-    Map body = ({
-      "taskId": task.id,
-      "clientId": clientId,
-      "type": EnumToString.parse(voteChoice)
-    });
+  Future<bool> patchTaskStatus(Task task, TaskStatus taskStatus) async {
+    var queryParameters = {'status': EnumToString.convertToString(taskStatus)};
+    var uri = Uri.https(
+        taskUrl, taskPostfix + '/task/' + task.id.toString(), queryParameters);
 
-    debugPrint(body.toString());
-    http.Response response = await http.post(
-      "https://greenapp-gateway.herokuapp.com/task-resolver/vote",
-      headers: <String, String>{
-        'Authorization': _bearerAuth,
-        'Content-type': 'application/json',
-      },
-      body: json.encode(body),
-    );
+    final dio.Dio dioClient = new dio.Dio();
+    dioClient.options.headers["Authorization"] = _getCurrentToken();
+    final dio.Response response = await dioClient.patchUri(uri);
     if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
       debugPrint(response.statusCode.toString());
-      debugPrint(response.body.toString());
-
+      debugPrint('Update success');
       return true;
     } else {
-      // If the server did no
-      //t return a 201 CREATED response,
-      // then throw an exception
       debugPrint(response.statusCode.toString());
-      debugPrint(response.body.toString());
       if (response.statusCode == 401) logoutCallback();
+      //throw Exception('Failed to update task ${task.toString()}');
       return false;
-      throw Exception('Failed to parse tasks');
     }
+  }
+
+  Future<bool> voteForTask(Task task, VoteChoice voteChoice) async {
+    var queryParameters = {
+      'taskId': task.id.toString(),
+      'type': EnumToString.convertToString(voteChoice)
+    };
+    var uri = Uri.https(taskUrl, taskPostfix + '/vote', queryParameters);
+
+    final dio.Dio dioClient = new dio.Dio();
+    dioClient.options.headers["Authorization"] = _getCurrentToken();
+    final dio.Response response = await dioClient.postUri(uri);
+    if (response.statusCode == 200) {
+      debugPrint(response.statusCode.toString());
+      debugPrint('Update success');
+      return true;
+    } else {
+      debugPrint(response.statusCode.toString());
+      if (response.statusCode == 401) logoutCallback();
+      //throw Exception('Failed to update task ${task.toString()}');
+      return false;
+    }
+  }
+
+  Future<String> _getCurrentToken() async {
+    final token = await _auth.currentUser.getIdToken(false);
+    final token2 = await _auth.currentUser.getIdTokenResult();
+    debugPrint('Bearer ' + token);
+    return token != null ? 'Bearer ' + token : '';
   }
 }

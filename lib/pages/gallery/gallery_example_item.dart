@@ -2,11 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
-import 'package:greenapp/services/base_task_provider.dart';
-import 'package:greenapp/services/task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
+import 'package:greenapp/services/task/task_provider.dart';
 
-const String address =
-    "https://greenapp-gateway.herokuapp.com/task-provider/attachment/";
+const String address = "https://alter-eco-api.herokuapp.com/api/attachment/";
 
 class GalleryExampleItem {
   GalleryExampleItem({this.id, this.resource, this.isSvg = false});

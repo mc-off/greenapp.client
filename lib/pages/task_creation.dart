@@ -6,9 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:greenapp/models/task.dart';
 import 'package:greenapp/models/text-styles.dart';
-import 'package:greenapp/models/user.dart';
 import 'package:greenapp/pages/task_item.dart';
-import 'package:greenapp/services/base_task_provider.dart';
+import 'package:greenapp/services/task/base_task_provider.dart';
 import 'package:greenapp/utils/styles.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -119,8 +118,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
         reward: int.parse(_reward.value.text),
       );
       debugPrint(json.encode(task).toString());
-      final response = await widget.baseTaskProvider
-          .createTask(images, task, UserType.LOCAL);
+      final response = await widget.baseTaskProvider.createTask(images, task);
       if (response != null) {
         task.id = response;
         this.task = task;
